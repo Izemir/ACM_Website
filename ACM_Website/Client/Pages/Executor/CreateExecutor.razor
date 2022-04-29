@@ -1,0 +1,171 @@
+﻿@page "/createexecutor"
+@inject IExecutorService ExecutorService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+<h3>Создание исполнителя</h3>
+
+<MudGrid>
+    <MudItem xs="7">
+        <EditForm Model="executor">
+            <DataAnnotationsValidator />
+            <div class="mb-3">
+                <label for="name">ФИО</label>
+                <InputText id="name" @bind-Value="executor.Name" class="form-control" />
+                <ValidationMessage For="@(() => executor.Name)" />
+            </div>
+            <div class="mb-3">
+                <label for="inn">ИНН</label>
+                <InputText id="inn" @bind-Value="executor.INN" class="form-control" />
+                <ValidationMessage For="@(() => executor.INN)" />
+            </div>
+            <div class="dropdown-divider"></div>
+            <div class="mb-3">
+                <label for="contact">Контакт</label>
+                <InputText id="contact" @bind-Value="executor.Contacts[0].Address" class="form-control" />
+                <ValidationMessage For="@(() => executor.Contacts[0].Address)" />
+            </div>
+            <div class="form-group">
+                <label for="speciality">Специальность</label>
+                <InputSelect id="speciality" @bind-Value="executor.Speciality[0].Id" class="form-control">
+                    @foreach (var spec in SpecialityList)
+                    {
+                        <option value="@spec.Id">@spec.SpecialityName</option>
+                    }
+                </InputSelect>
+                <button class="btn btn-secondary" @onclick="(()=>AddSpeciality(executor.Speciality[0].Id))">Добавить специальность</button>
+            </div>
+            <div class="form-group">
+                <label for="competency">Навыки</label>
+                <InputSelect id="competency" @bind-Value="executor.Competency[0].Id" class="form-control">
+                    @foreach (var comp in CompetencyList)
+                    {
+                        <option value="@comp.Id">@comp.CompetencyName</option>
+                    }
+                </InputSelect>
+                <button class="btn btn-secondary" @onclick="(()=>AddCompetency(executor.Competency[0].Id))">Добавить навык</button>
+            </div>            
+            
+        </EditForm>
+    </MudItem>
+    <MudItem xs="5">
+        <MudTable Items="ChosenSpecialityList" Hover="true" Striped="true" Dense="true" Class="mb-2">
+            <HeaderContent>
+                <MudTh>Название</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.SpecialityName</MudTd>
+                <MudTd DataLabel="Delete">
+                    <MudIconButton OnClick="(()=>DeleteSpeciality(context.Id))"
+                                   Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Filled"></MudIconButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+        <MudDivider/>
+            <MudTable Items="ChosenCompetencyList" Hover="true" Striped="true" Dense="true" Class="mb-2">
+                <HeaderContent>
+                    <MudTh>Название</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Name">@context.CompetencyName</MudTd>
+                    <MudTd DataLabel="Delete">
+                        <MudIconButton OnClick="(()=>DeleteCompetency(context.Id))"
+                                       Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Primary"
+                                       Variant="Variant.Filled"></MudIconButton>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+    </MudItem>
+</MudGrid>
+
+<button type="submit" class="btn btn-primary" @onclick="HandleCreation">Создать</button>
+<div class="@messageCssClass">
+    <span>@message</span>
+</div>
+
+
+
+@code {
+    private WebExecutor executor = new WebExecutor();
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    public List<Competency> CompetencyList { get; set; }
+    public List<Speciality> SpecialityList { get; set; }
+
+    public List<Speciality> ChosenSpecialityList { get; set; }
+
+    public List<Competency> ChosenCompetencyList { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ChosenSpecialityList = new List<Speciality>();
+        ChosenCompetencyList = new List<Competency>();
+        executor.Contacts = new List<Contact>() { new Contact() { Address = "" } };
+
+        SpecialityList = new List<Speciality>() { new Speciality() { Id = 0, SpecialityName = "" } };
+        executor.Speciality = SpecialityList;
+
+        CompetencyList = new List<Competency>() { new Competency() { Id = 0, CompetencyName = "" } };
+        executor.Competency = CompetencyList;
+
+        var specs = await ExecutorService.GetSpecialityList();
+        if (specs.Success)
+        {
+            SpecialityList = specs.Data;
+        }
+        var comps = await ExecutorService.GetCompetencyList();
+        if (comps.Success)
+        {
+            CompetencyList = comps.Data;
+        }
+    }
+
+    void AddSpeciality(long id)
+    {
+        var spec = SpecialityList.First(i => i.Id == id);
+        ChosenSpecialityList.Add(spec);
+    }
+
+    void DeleteSpeciality(long id)
+    {
+        var delete = ChosenSpecialityList.First(i => i.Id == id);
+        ChosenSpecialityList.Remove(delete);
+    }
+
+    void AddCompetency(long id)
+    {
+        var comp = CompetencyList.First(i => i.Id == id);
+        ChosenCompetencyList.Add(comp);
+    }
+
+    void DeleteCompetency(long id)
+    {
+        var delete = ChosenCompetencyList.First(i => i.Id == id);
+        ChosenCompetencyList.Remove(delete);
+    }
+
+    async Task HandleCreation()
+    {
+        
+        var id = await LocalStorage.GetItemAsStringAsync("id");
+        executor.Competency = ChosenCompetencyList;
+        executor.Speciality = ChosenSpecialityList;
+        var result = await ExecutorService.AddExecutor(executor, long.Parse(id));
+
+        message = result.Message;
+        if (result.Success)
+        {
+            messageCssClass = "text-success";
+            //NavigationManager.NavigateTo("customer");
+        }
+        else
+            messageCssClass = "text-danger";
+    }
+}

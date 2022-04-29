@@ -1,0 +1,44 @@
+﻿@inherits LayoutComponentBase
+@inject ILocalStorageService LocalStorage
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <div class="main">
+        @*<AuthorizeView>
+                <NotAuthorized>
+                    <div class="top-row px-4">
+                        <a href="register" target="_blank" class="ml-md-auto">Регистрация</a>
+                    </div>
+                    <div class="top-row px-4">
+                        <a href="login" target="_blank" class="ml-md-auto">Войти</a>
+                    </div>
+                </NotAuthorized>
+                <Authorized>
+                    <div class="top-row px-4">
+                        <a href="" @onclick="Logout" target="_blank" class="ml-md-auto">About</a>
+                    </div>
+                </Authorized>
+            </AuthorizeView>*@
+
+        <div class="content px-4">
+            @Body
+        </div>
+    </div>
+</div>
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+@code{
+    private async void Logout()
+    {
+        await LocalStorage.RemoveItemAsync("username");
+        await AuthStateProvider.GetAuthenticationStateAsync();
+    }
+}
+

@@ -1,0 +1,25 @@
+﻿@page "/profile"
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+<h3>Личный кабинет пользователя @Username</h3>
+
+<div class="buttons">
+    <button class="btn btn-primary" @onclick="@(()=>NavigationManager.NavigateTo("/customer"))">
+        <i class="oi oi-arrow-right"></i>&nbsp;&nbsp;&nbsp;Заказчик
+    </button>
+    <button class="btn btn-primary" @onclick="@(()=>NavigationManager.NavigateTo("/chat"))">
+        <i class="oi oi-arrow-right"></i>&nbsp;&nbsp;&nbsp;Чат
+    </button>
+</div>
+
+
+@code {
+    private string Username = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Username = await LocalStorage.GetItemAsStringAsync("username");
+    }
+
+}

@@ -1,0 +1,85 @@
+﻿@page "/customer"
+@inject ICustomerService CustomerService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+@if (customer == null)
+{
+    <span>Загрузка...</span>
+}
+else
+{
+    <h3>Заказчик</h3>
+    <div class="name">
+        <h5>Имя</h5>
+        <span>@customer.Name</span><br />
+    </div>
+    <div class="address">
+        <h5>Адрес</h5>
+        <span>@customer.Address</span><br />
+    </div>
+    <div class="ogrn">
+        <h5>ОГРН</h5>
+        <span>@customer.OGRN</span><br />
+    </div>
+    <div class="kpp">
+        <h5>КПП</h5>
+        <span>@customer.KPP</span><br />
+    </div>
+    <div class="inn">
+        <h5>ИНН</h5>
+        <span>@customer.INN</span><br />
+    </div>
+    <div class="name">
+            <h5>Имя контактного лица</h5>
+            <span>@customer.ContactPersons[0].Name</span><br />
+        </div>
+        <div class="contact">
+            <h5>Контакт</h5>
+            <span>@customer.ContactPersons[0].Contacts[0].Address</span><br />
+        </div>
+    <div class="type">
+        <h5>Тип заказчика</h5>
+        <span>@customer.CustomerType.TypeName</span><br />
+    </div>
+
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+
+@code {
+
+    public long Id { get; set; }
+
+    WebCustomer customer = null;
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var id = await LocalStorage.GetItemAsStringAsync("id");
+        var request = await CustomerService.ExistCustomer(long.Parse(id));
+
+        if (request.Success && request.Data!=0)
+        {
+            Id = request.Data;
+            var customerRequest = await CustomerService.GetCustomer(Id);
+            if (customerRequest.Success)
+            {
+                customer = customerRequest.Data;
+            }
+            else
+                messageCssClass = "text-danger";
+        }
+        else
+        {
+            NavigationManager.NavigateTo("createcustomer");
+        }
+
+
+
+
+    }
+}
