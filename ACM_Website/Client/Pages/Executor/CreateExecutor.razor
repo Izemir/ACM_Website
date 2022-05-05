@@ -27,23 +27,26 @@
             </div>
             <div class="form-group">
                 <label for="speciality">Специальность</label>
-                <InputSelect id="speciality" @bind-Value="executor.Speciality[0].Id" class="form-control">
-                    @foreach (var spec in SpecialityList)
-                    {
-                        <option value="@spec.Id">@spec.SpecialityName</option>
+                <InputSelect id="speciality" @bind-Value="specId" class="form-control">
+                    @if (SpecialityList != null)
+                    {                        
+                        @foreach (var spec in SpecialityList)
+                        {
+                            <option value="@spec.Id">@spec.SpecialityName</option>
+                        }
                     }
                 </InputSelect>
-                <button class="btn btn-secondary" @onclick="(()=>AddSpeciality(executor.Speciality[0].Id))">Добавить специальность</button>
+                <button class="btn btn-secondary" @onclick="(()=>AddSpeciality(specId))">Добавить специальность</button>
             </div>
             <div class="form-group">
                 <label for="competency">Навыки</label>
-                <InputSelect id="competency" @bind-Value="executor.Competency[0].Id" class="form-control">
+                <InputSelect id="competency" @bind-Value="compId" class="form-control">
                     @foreach (var comp in CompetencyList)
                     {
                         <option value="@comp.Id">@comp.CompetencyName</option>
                     }
                 </InputSelect>
-                <button class="btn btn-secondary" @onclick="(()=>AddCompetency(executor.Competency[0].Id))">Добавить навык</button>
+                <button class="btn btn-secondary" @onclick="(()=>AddCompetency(compId))">Добавить навык</button>
             </div>            
             
         </EditForm>
@@ -91,6 +94,9 @@
 
 
 @code {
+
+    private long specId { get; set; } = 0;
+    private long compId { get; set; } = 0;
     private WebExecutor executor = new WebExecutor();
 
     string message = string.Empty;
@@ -109,22 +115,23 @@
         ChosenCompetencyList = new List<Competency>();
         executor.Contacts = new List<Contact>() { new Contact() { Address = "" } };
 
-        SpecialityList = new List<Speciality>() { new Speciality() { Id = 0, SpecialityName = "" } };
-        executor.Speciality = SpecialityList;
+        SpecialityList = new List<Speciality>();
 
-        CompetencyList = new List<Competency>() { new Competency() { Id = 0, CompetencyName = "" } };
-        executor.Competency = CompetencyList;
+        CompetencyList = new List<Competency>();
 
         var specs = await ExecutorService.GetSpecialityList();
         if (specs.Success)
         {
             SpecialityList = specs.Data;
+            specId = SpecialityList[0].Id;
         }
         var comps = await ExecutorService.GetCompetencyList();
         if (comps.Success)
         {
             CompetencyList = comps.Data;
+            compId = CompetencyList[0].Id;
         }
+
     }
 
     void AddSpeciality(long id)
@@ -153,19 +160,31 @@
 
     async Task HandleCreation()
     {
-        
-        var id = await LocalStorage.GetItemAsStringAsync("id");
-        executor.Competency = ChosenCompetencyList;
-        executor.Speciality = ChosenSpecialityList;
-        var result = await ExecutorService.AddExecutor(executor, long.Parse(id));
-
-        message = result.Message;
-        if (result.Success)
+        if (ChosenCompetencyList == null
+            || ChosenSpecialityList == null
+            || string.IsNullOrEmpty(executor.Name)
+            || string.IsNullOrEmpty(executor.INN) ||
+            string.IsNullOrEmpty(executor.Contacts[0].Address))
         {
-            messageCssClass = "text-success";
-            //NavigationManager.NavigateTo("customer");
+            message = "Не заполнены все поля";
+            messageCssClass = "text-danger";
         }
         else
-            messageCssClass = "text-danger";
+        {
+
+            var id = await LocalStorage.GetItemAsStringAsync("id");
+            executor.Competency = ChosenCompetencyList;
+            executor.Speciality = ChosenSpecialityList;
+            var result = await ExecutorService.AddExecutor(executor, long.Parse(id));
+
+            message = result.Message;
+            if (result.Success)
+            {
+                messageCssClass = "text-success";
+                NavigationManager.NavigateTo("executor");
+            }
+            else
+                messageCssClass = "text-danger";
+        }
     }
 }

@@ -3,15 +3,17 @@ using System;
 using ACM_API.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ACM_API.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20220429131405_Initial16")]
+    partial class Initial16
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -62,29 +64,6 @@ namespace ACM_API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ContactType");
-                });
-
-            modelBuilder.Entity("ACM_API.Models.Customer.Construction", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<string>("ConstructionName")
-                        .HasColumnType("text");
-
-                    b.Property<long?>("CustomerId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("Construction");
                 });
 
             modelBuilder.Entity("ACM_API.Models.Customer.ContactPerson", b =>
@@ -198,6 +177,21 @@ namespace ACM_API.Migrations
                     b.ToTable("Competencies");
                 });
 
+            modelBuilder.Entity("ACM_API.Models.Executor.CompetencyExecutor", b =>
+                {
+                    b.Property<long>("ExecutorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("CompetencyId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ExecutorId", "CompetencyId");
+
+                    b.HasIndex("CompetencyId");
+
+                    b.ToTable("CompetencyExecutor");
+                });
+
             modelBuilder.Entity("ACM_API.Models.Executor.Executor", b =>
                 {
                     b.Property<long>("Id")
@@ -244,15 +238,10 @@ namespace ACM_API.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<long?>("ConstructionId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("ServiceName")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ConstructionId");
 
                     b.ToTable("Service");
                 });
@@ -288,21 +277,6 @@ namespace ACM_API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("CompetencyExecutor", b =>
-                {
-                    b.Property<long>("CompetencyId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("ExecutorId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("CompetencyId", "ExecutorId");
-
-                    b.HasIndex("ExecutorId");
-
-                    b.ToTable("CompetencyExecutor");
                 });
 
             modelBuilder.Entity("CompetencyService", b =>
@@ -352,13 +326,6 @@ namespace ACM_API.Migrations
                     b.Navigation("ContactType");
                 });
 
-            modelBuilder.Entity("ACM_API.Models.Customer.Construction", b =>
-                {
-                    b.HasOne("ACM_API.Models.Customer.Customer", null)
-                        .WithMany("Constructions")
-                        .HasForeignKey("CustomerId");
-                });
-
             modelBuilder.Entity("ACM_API.Models.Customer.ContactPerson", b =>
                 {
                     b.HasOne("ACM_API.Models.Customer.Customer", null)
@@ -382,26 +349,23 @@ namespace ACM_API.Migrations
                         .HasForeignKey("CustomerId");
                 });
 
-            modelBuilder.Entity("ACM_API.Models.Service", b =>
+            modelBuilder.Entity("ACM_API.Models.Executor.CompetencyExecutor", b =>
                 {
-                    b.HasOne("ACM_API.Models.Customer.Construction", null)
-                        .WithMany("Services")
-                        .HasForeignKey("ConstructionId");
-                });
-
-            modelBuilder.Entity("CompetencyExecutor", b =>
-                {
-                    b.HasOne("ACM_API.Models.Executor.Competency", null)
-                        .WithMany()
+                    b.HasOne("ACM_API.Models.Executor.Competency", "Competency")
+                        .WithMany("Executors")
                         .HasForeignKey("CompetencyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ACM_API.Models.Executor.Executor", null)
-                        .WithMany()
+                    b.HasOne("ACM_API.Models.Executor.Executor", "Executor")
+                        .WithMany("Competencies")
                         .HasForeignKey("ExecutorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Competency");
+
+                    b.Navigation("Executor");
                 });
 
             modelBuilder.Entity("CompetencyService", b =>
@@ -434,11 +398,6 @@ namespace ACM_API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ACM_API.Models.Customer.Construction", b =>
-                {
-                    b.Navigation("Services");
-                });
-
             modelBuilder.Entity("ACM_API.Models.Customer.ContactPerson", b =>
                 {
                     b.Navigation("Contacts");
@@ -446,15 +405,20 @@ namespace ACM_API.Migrations
 
             modelBuilder.Entity("ACM_API.Models.Customer.Customer", b =>
                 {
-                    b.Navigation("Constructions");
-
                     b.Navigation("ContactPersons");
 
                     b.Navigation("Industries");
                 });
 
+            modelBuilder.Entity("ACM_API.Models.Executor.Competency", b =>
+                {
+                    b.Navigation("Executors");
+                });
+
             modelBuilder.Entity("ACM_API.Models.Executor.Executor", b =>
                 {
+                    b.Navigation("Competencies");
+
                     b.Navigation("Contacts");
                 });
 #pragma warning restore 612, 618

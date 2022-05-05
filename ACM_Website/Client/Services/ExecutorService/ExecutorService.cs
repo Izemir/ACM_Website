@@ -30,6 +30,12 @@ namespace ACM_Website.Client.Services.ExecutorService
             return await result.Content.ReadFromJsonAsync<ServiceResponse<WebExecutor>>();
         }
 
+        public async Task<ServiceResponse<bool>> DeleteExecutor(long userId)
+        {
+            var result = await _http.DeleteAsync($"{apiConnection}/Executor/DeleteExecutor/{userId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+        }
+
         public async Task<ServiceResponse<long>> ExistExecutor(long userId)
         {
             var result = await _http.GetAsync($"{apiConnection}/Executor/ExistExecutor/{userId}");

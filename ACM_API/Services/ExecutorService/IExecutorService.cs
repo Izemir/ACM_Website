@@ -17,7 +17,7 @@ namespace ACM_API.Services.ExecutorService
 
         Task<ServiceResponse<ExecutorDto>> UpdateExecutor(ExecutorDto updatedExecutor);
 
-        Task<ServiceResponse<List<ExecutorDto>>> DeleteExecutor(long id);
+        Task<ServiceResponse<bool>> DeleteExecutor(long userId);
 
         Task<ServiceResponse<List<SpecialityDto>>> GetSpecialityList();
 

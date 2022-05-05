@@ -32,6 +32,12 @@ namespace ACM_Website.Client.Services.CustomerService
             return await result.Content.ReadFromJsonAsync<ServiceResponse<WebCustomer>>();
         }
 
+        public async Task<ServiceResponse<bool>> DeleteCustomer(long userId)
+        {
+            var result = await _http.DeleteAsync($"{apiConnection}/Customer/DeleteCustomer/{userId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+        }
+
         public async Task<ServiceResponse<long>> ExistCustomer(long userId)
         {
             var result = await _http.GetAsync($"{apiConnection}/Customer/ExistCustomer/{userId}");

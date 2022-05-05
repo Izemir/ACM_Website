@@ -46,17 +46,25 @@ namespace ACM_API.Services.CustomerService
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<List<CustomerDto>>> DeleteCustomer(long id)
+        public async Task<ServiceResponse<bool>> DeleteCustomer(long userId)
         {
-            var serviceResponse = new ServiceResponse<List<CustomerDto>>();
+            var serviceResponse = new ServiceResponse<bool>();
             try
             {
-                var dBCustomer = await _context.Customers.FindAsync(id);
+                var user = await _context.Users.FindAsync(userId);
+                var customer = await _context.Customers
+                    .Include(i => i.Industries)
+                    .Include(i => i.ContactPersons)
+                    .Include(i => i.CustomerType)
+                    .FirstAsync(i => i.Id == user.CustomerId);
 
-                _context.Customers.Remove(dBCustomer);
+
+                _context.Customers.Remove(customer);
+                user.CustomerId = null;
+
                 await _context.SaveChangesAsync();
 
-                serviceResponse.Data = (await _context.Customers.ToListAsync()).Select(i => _mapper.Map<CustomerDto>(i)).ToList();
+                serviceResponse.Data = true;
 
             }
             catch (Exception ex)

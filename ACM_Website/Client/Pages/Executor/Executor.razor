@@ -1,8 +1,101 @@
 ﻿@page "/executor"
+@inject IExecutorService ExecutorService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
 
-<h3>Исполнитель</h3>
+@if (executor == null)
+{
+    <span>Загрузка...</span>
+}
+else
+{
+    <h3>Исполнитель</h3>
+    <div class="name">
+        <h5>Имя</h5>
+        <span>@executor.Name</span><br />
+    </div>
+    <div class="inn">
+        <h5>ИНН</h5>
+        <span>@executor.INN</span><br />
+    </div>
+    <div class="contact">
+        <h5>Контакт</h5>
+        <span>@executor.Contacts[0].Address</span><br />
+    </div>
+    <MudTable Items="executor.Speciality" Hover="true" Striped="true" Dense="true" Class="mb-2">
+        <HeaderContent>
+            <MudTh>Специальности</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.SpecialityName</MudTd>
+        </RowTemplate>
+    </MudTable>
+    <MudTable Items="executor.Competency" Hover="true" Striped="true" Dense="true" Class="mb-2">
+        <HeaderContent>
+            <MudTh>Навыки</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.CompetencyName</MudTd>
+        </RowTemplate>
+    </MudTable>
+
+    <button class="btn btn-danger" @onclick="@(Delete)">
+        <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить
+    </button>
+
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
 
 @code {
-    private WebExecutor executor = new WebExecutor();
+    private WebExecutor executor;
+
+    public long Id { get; set; }
+
+    public long userId { get; set; }
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        var request = await ExecutorService.ExistExecutor(userId);
+
+        if (request.Success && request.Data != 0)
+        {
+            Id = request.Data;
+            var executorRequest = await ExecutorService.GetExecutor(Id);
+            if (executorRequest.Success)
+            {
+                executor = executorRequest.Data;
+            }
+            else
+                messageCssClass = "text-danger";
+        }
+        else
+        {
+            NavigationManager.NavigateTo("createexecutor");
+        }
+
+
+
+
+    }
+
+    async Task Delete()
+    {
+        var result = await ExecutorService.DeleteExecutor(userId);
+        if (result.Success)
+        {
+            NavigationManager.NavigateTo("createexecutor");
+        }
+        else
+        {
+            message = result.Message;
+            messageCssClass = "text-danger";
+        }
+    }
 
 }

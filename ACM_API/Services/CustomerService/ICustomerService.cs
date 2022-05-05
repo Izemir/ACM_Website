@@ -18,7 +18,7 @@ namespace ACM_API.Services.CustomerService
 
         Task<ServiceResponse<CustomerDto>> UpdateCustomer(CustomerDto updatedCustomer);
 
-        Task<ServiceResponse<List<CustomerDto>>> DeleteCustomer(long id);
+        Task<ServiceResponse<bool>> DeleteCustomer(long userId);
 
         Task<ServiceResponse<long>> ExistCustomer(long userId);
 

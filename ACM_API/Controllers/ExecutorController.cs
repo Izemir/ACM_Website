@@ -31,7 +31,7 @@ namespace ACM_API.Controllers
             return Ok(await _executorService.GetAllExecutors());
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("GetExecutor/{id}")]
         public async Task<ActionResult<ExecutorDto>> Get(long id)
         {
             return Ok(await _executorService.GetExecutorById(id));
@@ -60,10 +60,10 @@ namespace ACM_API.Controllers
             return Ok(response);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ServiceResponse<List<ExecutorDto>>>> DeleteExecutor(int id)
+        [HttpDelete("DeleteExecutor/{userId}")]
+        public async Task<ActionResult<ServiceResponse<bool>>> DeleteExecutor(int userId)
         {
-            var response = await _executorService.DeleteExecutor(id);
+            var response = await _executorService.DeleteExecutor(userId);
             if (response.Data == null)
             {
                 return BadRequest(response);
@@ -85,7 +85,7 @@ namespace ACM_API.Controllers
         }
 
         [HttpGet("ExistExecutor/{userId}")]
-        public async Task<ActionResult<long>> ExistCustomer(long userId)
+        public async Task<ActionResult<long>> ExistExecutor(long userId)
         {
             return Ok(await _executorService.ExistExecutor(userId));
         }

@@ -58,10 +58,10 @@ namespace ACM_API.Controllers
             return Ok(response);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ServiceResponse<List<CustomerDto>>>> DeleteCustomer(long id)
+        [HttpDelete("DeleteCustomer/{userId}")]
+        public async Task<ActionResult<ServiceResponse<bool>>> DeleteCustomer(long userId)
         {
-            var response = await _customerService.DeleteCustomer(id);
+            var response = await _customerService.DeleteCustomer(userId);
             if (response.Data == null)
             {
                 return BadRequest(response);

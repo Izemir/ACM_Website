@@ -29,41 +29,11 @@ namespace ACM_API.Services.ExecutorService
             try
             {
                 var executor = _mapper.Map<Executor>(newExecutor);
-                var comps = newExecutor.Competency.Select(i => i.Id).ToList();
-                //var specs = newExecutor.Speciality.Select(i => i.Id).ToList();
-                executor.Competency.Clear();
-                executor.Speciality.Clear();
-                //executor.Competency.Add(await _context.Competencies.FirstAsync(i => comps.Contains(i.Id)));
-               // executor.Competency = _context.Competencies.Where(i => comps.Contains(i.Id)).ToList();
-                // executor.Speciality = _context.Specialities.Where(i => specs.Contains(i.Id)).ToList();
-                //var comps = _context.Competencies.Where(i => newExecutor.Competency.Contains(i)).ToList();
-                //var specs = _context.Specialities.Where(i => newExecutor.Speciality.Contains(i)).ToList();
-                //foreach (var spec in specs)
-                //{
-                //    executor.Speciality.Add(spec);
-                //}
-                //executor.Competency.Clear();
-                //executor.Speciality.Clear();
-                
-                //executor.Speciality.AddRange(specs);
-                //executor.Competency.AddRange(comps);
+                executor.Competency = _context.Competencies.Where(i => newExecutor.Competency.Contains(i)).ToList();
+                executor.Speciality = _context.Specialities.Where(i => newExecutor.Speciality.Contains(i)).ToList();
                 _context.Executors.Add(executor);
                 
                 await _context.SaveChangesAsync();
-
-                //executor.Competency.Add(await _context.Competencies.FirstAsync(i => comps.Contains(i.Id)));
-                //    await _context.SaveChangesAsync();
-
-                var comp = await _context.Competencies.FirstAsync(i => comps.Contains(i.Id));
-                executor.Competency.Add(comp);
-                await _context.SaveChangesAsync();
-
-
-                //executor.Speciality = specs;
-                //executor.Competency = comps;
-
-                //_context.Entry(executor).State = EntityState.Modified;
-                //_context.SaveChanges();
 
                 var user = await _context.Users.FirstAsync(i => i.Id == userId);
                 user.ExecutorId = executor.Id;
@@ -80,17 +50,25 @@ namespace ACM_API.Services.ExecutorService
 
         }
 
-        public async Task<ServiceResponse<List<ExecutorDto>>> DeleteExecutor(long id)
+        public async Task<ServiceResponse<bool>> DeleteExecutor(long userId)
         {
-            var serviceResponse = new ServiceResponse<List<ExecutorDto>>();
+            var serviceResponse = new ServiceResponse<bool>();
             try
             {
-                var dBExecutor = await _context.Executors.FindAsync(id);
+                var user = await _context.Users.FindAsync(userId);
+                var executor = await _context.Executors
+                    .Include(i=>i.Speciality)
+                    .Include(i=>i.Competency)
+                    .Include(i=>i.Contacts)
+                    .FirstAsync(i=>i.Id==user.ExecutorId);
 
-                _context.Executors.Remove(dBExecutor);
+                
+                _context.Executors.Remove(executor);
+                user.ExecutorId = null;
+
                 await _context.SaveChangesAsync();
 
-                serviceResponse.Data = (await _context.Executors.ToListAsync()).Select(i => _mapper.Map<ExecutorDto>(i)).ToList();
+                serviceResponse.Data = true;
 
             }
             catch (Exception ex)
@@ -133,7 +111,12 @@ namespace ACM_API.Services.ExecutorService
         public async Task<ServiceResponse<ExecutorDto>> GetExecutorById(long id)
         {
             var serviceResponse = new ServiceResponse<ExecutorDto>();
-            serviceResponse.Data = _mapper.Map<ExecutorDto>(await _context.Executors.FindAsync(id));
+            var executor = await _context.Executors
+                .Include(i => i.Competency)
+                .Include(i => i.Contacts)
+                .Include(i => i.Speciality)
+                .FirstAsync(i=>i.Id==id);
+            serviceResponse.Data = _mapper.Map<ExecutorDto>(executor);
             return serviceResponse;
         }
 
