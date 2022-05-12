@@ -1,4 +1,5 @@
-﻿using ACM_API.Models.Executor;
+﻿using ACM_API.Models.Customer;
+using ACM_API.Models.Executor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,7 @@ namespace ACM_API.Models
 
         public string ServiceName { get; set; }
         public List<Competency> Competency { get; set; }
+
+        public List<Construction> Constructions { get; set; }
     }
 }

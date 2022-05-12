@@ -12,5 +12,12 @@ namespace ACM_Website.Client.Services.CustomerService
         Task<ServiceResponse<WebCustomer>> GetCustomer(long customerId);
         Task<ServiceResponse<long>> ExistCustomer(long userId);
         Task<ServiceResponse<List<CustomerType>>> GetCustomerTypes();
+        Task<ServiceResponse<bool>> DeleteCustomer(long userId);
+        Task<ServiceResponse<List<Construction>>> GetConstructions(long customerId);
+        Task<ServiceResponse<List<Service>>> GetServices();
+        Task<ServiceResponse<List<Construction>>> AddConstruction(long customerId, Construction construction);
+        Task<ServiceResponse<List<Construction>>> UpdateConstruction(long customerId, Construction construction);
+
+        Task<ServiceResponse<List<Construction>>> DeleteConstruction(long customerId, long constructionId);
     }
 }

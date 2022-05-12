@@ -1,4 +1,5 @@
 ﻿using ACM_API.DB;
+using ACM_API.Dtos;
 using ACM_API.Dtos.Customer;
 using ACM_API.Models;
 using ACM_API.Models.Customer;
@@ -21,6 +22,8 @@ namespace ACM_API.Services.CustomerService
             _context = context;
             _mapper = mapper;
         }
+
+        
 
         public async Task<ServiceResponse<CustomerDto>> AddCustomer(CustomerDto newCustomer, long userId)
         {
@@ -116,6 +119,7 @@ namespace ACM_API.Services.CustomerService
             return serviceResponse;
         }
 
+
         public async Task<ServiceResponse<CustomerDto>> UpdateCustomer(CustomerDto updatedCustomer)
         {
             var serviceResponse = new ServiceResponse<CustomerDto>();
@@ -129,6 +133,154 @@ namespace ACM_API.Services.CustomerService
                 await _context.SaveChangesAsync();
 
                 serviceResponse.Data = _mapper.Map<CustomerDto>(await _context.Customers.FindAsync(updatedCustomer.Id));
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+
+        public async Task<ServiceResponse<List<ConstructionDto>>> AddConstruction(long customerId, ConstructionDto construction)
+        {
+            var serviceResponse = new ServiceResponse<List<ConstructionDto>>();
+            try
+            {
+                var customer = await _context.Customers
+                    .Include(i=>i.Constructions)                    
+                    .FirstAsync(i=>i.Id==customerId);
+
+                var ids = construction.Services.Select(i => i.Id).ToList();
+                var services = _context.Services.Where(i => ids.Contains(i.Id)).ToList();
+
+                var newConstr = _mapper.Map<Construction>(construction);
+
+                newConstr.Services = services;
+
+                customer.Constructions.Add(newConstr);
+
+                await _context.SaveChangesAsync();
+
+                var data = customer.Constructions.ToList();
+                serviceResponse.Data = data.Select(i => _mapper.Map<ConstructionDto>(i)).ToList();
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<ConstructionDto>>> UpdateConstruction(long customerId, ConstructionDto construction)
+        {
+            var serviceResponse = new ServiceResponse<List<ConstructionDto>>();
+            try
+            {
+                var customer = await _context.Customers
+                    .Include(i => i.Constructions)
+                    .ThenInclude(j=>j.Services)
+                    .FirstAsync(i => i.Id == customerId);
+
+                if (customer == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет данного заказчика";
+                    return serviceResponse;
+                }
+
+                var oldConstr = customer.Constructions.First(i => i.Id == construction.Id);
+                if (oldConstr == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет данного объекта";
+                    return serviceResponse;
+                }
+
+                var ids = construction.Services.Select(i => i.Id).ToList();
+                var services = _context.Services.Where(i => ids.Contains(i.Id)).ToList();
+
+                oldConstr.ConstructionName = construction.ConstructionName;
+                oldConstr.Description = construction.Description;
+                oldConstr.Services = services;
+
+                await _context.SaveChangesAsync();
+
+                var data = customer.Constructions.ToList();
+                serviceResponse.Data = data.Select(i => _mapper.Map<ConstructionDto>(i)).ToList();
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<ConstructionDto>>> GetConstructions(long customerId)
+        {
+            var serviceResponse = new ServiceResponse<List<ConstructionDto>>();
+            try
+            {
+                var customer = await _context.Customers
+                    .Include(i => i.Constructions)
+                    .ThenInclude(j => j.Services)
+                    .FirstAsync(i => i.Id == customerId);
+
+                if (customer == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет данного заказчика";
+                    return serviceResponse;
+                }
+
+                var data = customer.Constructions.ToList();
+                serviceResponse.Data = data.Select(i => _mapper.Map<ConstructionDto>(i)).ToList();
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<ServiceDto>>> GetServices()
+        {
+            var serviceResponse = new ServiceResponse<List<ServiceDto>>();
+            try
+            {
+                var data = await _context.Services.ToListAsync();
+                serviceResponse.Data = data.Select(i => _mapper.Map<ServiceDto>(i)).ToList();
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<ConstructionDto>>> DeleteConstruction(long customerId, long constructionId)
+        {
+            var serviceResponse = new ServiceResponse<List<ConstructionDto>>();
+            try
+            {
+                var customer = await _context.Customers
+                    .Include(i => i.Constructions)
+                    .ThenInclude(j=>j.Services)
+                    .FirstAsync(i => i.Id == customerId);
+
+                var construction = customer.Constructions.Find(i => i.Id == constructionId);
+
+                customer.Constructions.Remove(construction);
+
+                await _context.SaveChangesAsync();
+
+                var data = customer.Constructions.ToList();
+                serviceResponse.Data = data.Select(i => _mapper.Map<ConstructionDto>(i)).ToList();
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
-﻿using ACM_API.Dtos.Customer;
+﻿using ACM_API.Dtos;
+using ACM_API.Dtos.Customer;
 using ACM_API.Dtos.Executor;
 using ACM_API.Dtos.User;
 using ACM_API.Models;
@@ -25,6 +26,10 @@ namespace ACM_API
             CreateMap<CustomerType, CustomerTypeDto>();
             CreateMap<Competency, CompetencyDto>();
             CreateMap<Speciality, SpecialityDto>();
+            CreateMap<ConstructionDto, Construction>();
+            CreateMap<Construction, ConstructionDto>();
+            CreateMap<ServiceDto, Service>();
+            CreateMap<Service, ServiceDto>();
         }
     }
 }

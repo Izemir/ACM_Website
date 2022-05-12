@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace ACM_Website.Shared
+namespace ACM_API.Dtos
 {
-    public class Service
+    public class ServiceDto
     {
         public long Id { get; set; }
 

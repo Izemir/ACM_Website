@@ -10,7 +10,7 @@ namespace ACM_Website.Shared
     {
         public static class Api
         {
-            public const string ApiAddress = "http://87.226.145.58:8099";
+            public const string ApiAddress = "https://acmapi.qp.ru";
 
             public const string DebugApiAddress = "https://localhost:6001";
         }

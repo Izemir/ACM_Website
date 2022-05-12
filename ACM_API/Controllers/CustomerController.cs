@@ -1,4 +1,5 @@
 ﻿using ACM_API.DB;
+using ACM_API.Dtos;
 using ACM_API.Dtos.Customer;
 using ACM_API.Models;
 using ACM_API.Models.Customer;
@@ -80,6 +81,66 @@ namespace ACM_API.Controllers
         public async Task<ActionResult<List<CustomerTypeDto>>> GetCustomerTypes()
         {
             return Ok(await _customerService.GetCustomerTypes());
+        }
+
+        [HttpGet("GetConstructions/{customerId}")]
+        public async Task<ActionResult<List<ConstructionDto>>> GetConstructions(long customerId)
+        {
+            var response = await _customerService.GetConstructions(customerId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpGet("GetServices")]
+        public async Task<ActionResult<List<ServiceDto>>> GetServices()
+        {
+            var response = await _customerService.GetServices();
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPut("AddConstruction/{customerId}")]
+        public async Task<ActionResult<ServiceResponse<List<ConstructionDto>>>> AddConstruction(long customerId, ConstructionDto construction)
+        {
+            var response = await _customerService.AddConstruction(customerId, construction);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPut("UpdateConstruction/{customerId}")]
+        public async Task<ActionResult<ServiceResponse<List<ConstructionDto>>>> UpdateConstruction(long customerId, ConstructionDto construction)
+        {
+            var response = await _customerService.UpdateConstruction(customerId, construction);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpDelete("DeleteConstruction/{customerId}/{constructionId}")]
+        public async Task<ActionResult<ServiceResponse<List<ConstructionDto>>>> DeleteConstruction(long customerId, long constructionId)
+        {
+            var response = await _customerService.DeleteConstruction(customerId,constructionId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
         }
     }
 

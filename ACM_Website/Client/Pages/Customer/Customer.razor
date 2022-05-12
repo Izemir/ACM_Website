@@ -31,17 +31,74 @@ else
         <span>@customer.INN</span><br />
     </div>
     <div class="name">
-            <h5>Имя контактного лица</h5>
-            <span>@customer.ContactPersons[0].Name</span><br />
-        </div>
-        <div class="contact">
-            <h5>Контакт</h5>
-            <span>@customer.ContactPersons[0].Contacts[0].Address</span><br />
-        </div>
+        <h5>Имя контактного лица</h5>
+        <span>@customer.ContactPersons[0].Name</span><br />
+    </div>
+    <div class="contact">
+        <h5>Контакт</h5>
+        <span>@customer.ContactPersons[0].Contacts[0].Address</span><br />
+    </div>
     <div class="type">
         <h5>Тип заказчика</h5>
         <span>@customer.CustomerType.TypeName</span><br />
     </div>
+
+    <MudGrid>
+        <MudItem xs="3">
+            <button class="btn btn-secondary" @onclick="@(CreationConstruction)">
+                <i class="oi oi-document"></i>&nbsp;&nbsp;&nbsp;Добавить объект
+            </button>
+        </MudItem>
+        <MudItem xs="3">
+            <button class="btn btn-danger" @onclick="@(Delete)">
+                <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить заказчика
+            </button>
+        </MudItem>
+    </MudGrid>
+
+
+    <MudPopover Open="@_isOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.CenterCenter" TransformOrigin="Origin.CenterCenter">
+
+        <MudTextField @bind-Value="newConstruction.ConstructionName" Label="Название объекта" Variant="Variant.Text"></MudTextField>
+        <MudTextField T="string" @bind-Value="newConstruction.Description" Label="Описание" Variant="Variant.Text" Lines="5" />
+        <div>
+            <MudText Typo="Typo.h6">Необходимые услуги</MudText>
+            @foreach (var service in newConstruction.Services)
+            {
+                <MudText>@service.ServiceName</MudText>
+                <MudButton OnClick="@(()=>DeleteService(service.Id))">Удалить услугу</MudButton>
+            }
+        </div>
+        <MudSelect T="Service" @bind-Value="serviceValue">
+            @foreach (var service in services)
+            {
+                <MudSelectItem Value="service">@service.ServiceName</MudSelectItem>
+            }
+        </MudSelect>
+        <button class="btn btn-secondary" @onclick="(()=>AddService(serviceValue))">Добавить услугу</button>
+
+        <MudButton OnClick="@CreateConstruction" Color="Color.Primary">Сохранить</MudButton>
+
+        <MudButton OnClick="@CreationConstruction" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Закрыть</MudButton>
+
+    </MudPopover>
+
+    <MudTable Items="@constructions" Hover="true">
+        <HeaderContent>
+            <MudTh>Название объекта</MudTh>
+            <MudTh>Описание</MudTh>
+            <MudTh>Необходимые услуги</MudTh>
+            <MudTh>-</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.ConstructionName</MudTd>
+            <MudTd>@context.Description</MudTd>
+            <MudTd>@(ServicesToString(context.Services))</MudTd>
+            <MudTd>
+                <MudButton OnClick="@(()=>DeleteConstruction(context.Id))" Color="Color.Error">Удалить</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
 
     <div class="@messageCssClass">
         <span>@message</span>
@@ -52,23 +109,47 @@ else
 
     public long Id { get; set; }
 
+    public long userId { get; set; }
+
+    public Service serviceValue { get; set; }
+
     WebCustomer customer = null;
+
+    Construction newConstruction;
 
     string message = string.Empty;
     string messageCssClass = string.Empty;
 
+    List<Service> services;
+
+    List<Construction> constructions;
+
     protected override async Task OnInitializedAsync()
     {
-        var id = await LocalStorage.GetItemAsStringAsync("id");
-        var request = await CustomerService.ExistCustomer(long.Parse(id));
+        userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        var request = await CustomerService.ExistCustomer(userId);
 
-        if (request.Success && request.Data!=0)
+        if (request.Success && request.Data != 0)
         {
             Id = request.Data;
             var customerRequest = await CustomerService.GetCustomer(Id);
             if (customerRequest.Success)
             {
                 customer = customerRequest.Data;
+
+                var constructionResult = await CustomerService.GetConstructions(customer.Id);
+                if (constructionResult.Success)
+                {
+                    constructions = constructionResult.Data;
+                }
+                else
+                {
+                    message = constructionResult.Message;
+                    messageCssClass = "text-danger";
+                }
+
+                newConstruction = new Construction();
+                newConstruction.Services = new List<Service>();
             }
             else
                 messageCssClass = "text-danger";
@@ -78,8 +159,98 @@ else
             NavigationManager.NavigateTo("createcustomer");
         }
 
+        var serviceResult = await CustomerService.GetServices();
+        if (serviceResult.Success)
+        {
+            services = serviceResult.Data;
+        }
+        else
+        {
+            message = serviceResult.Message;
+            messageCssClass = "text-danger";
+        }
 
 
 
+    }
+
+    public bool _isOpen;
+
+    public void CreationConstruction()
+    {
+        if (_isOpen)
+            _isOpen = false;
+        else
+        {
+            _isOpen = true;
+        }
+
+    }
+
+    void DeleteService(long id)
+    {
+        var service = newConstruction.Services.Find(i => i.Id == id);
+        newConstruction.Services.Remove(service);
+    }
+
+    void AddService(Service service)
+    {
+        if(service!=null) newConstruction.Services.Add(service);
+    }
+
+    async Task CreateConstruction()
+    {
+        _isOpen = false;
+        var result = await CustomerService.AddConstruction(customer.Id, newConstruction);
+        if (result.Success)
+        {
+            constructions = result.Data;
+            newConstruction = new Construction();
+        }
+        else
+        {
+            message = result.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    async Task DeleteConstruction(long id)
+    {
+
+        var result = await CustomerService.DeleteConstruction(customer.Id, id);
+        if (result.Success)
+        {
+            constructions = result.Data;
+        }
+        else
+        {
+            message = result.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    async Task Delete()
+    {
+        var result = await CustomerService.DeleteCustomer(userId);
+        if (result.Success)
+        {
+            NavigationManager.NavigateTo("createcustomer");
+        }
+        else
+        {
+            message = result.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    string ServicesToString(List<Service> services)
+    {
+        string result = "";
+        foreach(var s in services)
+        {
+            result += (s.ServiceName + "\n");
+        }
+
+        return result;
     }
 }

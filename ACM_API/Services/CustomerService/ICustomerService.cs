@@ -1,4 +1,5 @@
-﻿using ACM_API.Dtos.Customer;
+﻿using ACM_API.Dtos;
+using ACM_API.Dtos.Customer;
 using ACM_API.Models;
 using ACM_API.Models.Customer;
 using System;
@@ -23,5 +24,15 @@ namespace ACM_API.Services.CustomerService
         Task<ServiceResponse<long>> ExistCustomer(long userId);
 
         Task<ServiceResponse<List<CustomerTypeDto>>> GetCustomerTypes();
+
+        Task<ServiceResponse<List<ConstructionDto>>> GetConstructions(long customerId);
+
+        Task<ServiceResponse<List<ServiceDto>>> GetServices();
+
+        Task<ServiceResponse<List<ConstructionDto>>> AddConstruction(long customerId, ConstructionDto construction);
+
+        Task<ServiceResponse<List<ConstructionDto>>> UpdateConstruction(long customerId, ConstructionDto construction);
+
+        Task<ServiceResponse<List<ConstructionDto>>> DeleteConstruction(long customerId, long constructionId);
     }
 }

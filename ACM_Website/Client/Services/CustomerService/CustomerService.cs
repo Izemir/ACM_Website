@@ -25,6 +25,9 @@ namespace ACM_Website.Client.Services.CustomerService
             apiConnection = GlobalConstants.Api.ApiAddress;
 #endif
         }
+
+        
+
         public async Task<ServiceResponse<WebCustomer>> AddCustomer(WebCustomer customer, long userId)
         {
             
@@ -44,6 +47,8 @@ namespace ACM_Website.Client.Services.CustomerService
             return await result.Content.ReadFromJsonAsync<ServiceResponse<long>>();
         }
 
+        
+
         public async Task<ServiceResponse<WebCustomer>> GetCustomer(long customerId)
         {
             var result = await _http.GetAsync($"{apiConnection}/Customer/GetCustomer/{customerId}");
@@ -55,6 +60,36 @@ namespace ACM_Website.Client.Services.CustomerService
             var result = await _http.GetAsync($"{apiConnection}/Customer/GetCustomerTypes");
             var data =  await result.Content.ReadFromJsonAsync<ServiceResponse<List<CustomerType>>>();
             return data;
+        }
+
+        public async Task<ServiceResponse<List<Service>>> GetServices()
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Customer/GetServices");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Service>>>();
+        }
+
+        public async Task<ServiceResponse<List<Construction>>> GetConstructions(long customerId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Customer/GetConstructions/{customerId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Construction>>>();
+        }
+
+        public async Task<ServiceResponse<List<Construction>>> AddConstruction(long customerId, Construction construction)
+        {
+            var result = await _http.PutAsJsonAsync($"{apiConnection}/Customer/AddConstruction/{customerId}", construction);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Construction>>>();
+        }
+
+        public async Task<ServiceResponse<List<Construction>>> UpdateConstruction(long customerId, Construction construction)
+        {
+            var result = await _http.PutAsJsonAsync($"{apiConnection}/Customer/UpdateConstruction/{customerId}", construction);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Construction>>>();
+        }
+
+        public async Task<ServiceResponse<List<Construction>>> DeleteConstruction(long customerId, long constructionId)
+        {
+            var result = await _http.DeleteAsync($"{apiConnection}/Customer/DeleteConstruction/{customerId}/{constructionId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Construction>>>();
         }
     }
 }
