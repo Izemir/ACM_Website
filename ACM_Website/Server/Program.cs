@@ -27,7 +27,7 @@ namespace ACM_Website.Server
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseUrls("https://*:8001", "http://*:8000");
+                    //webBuilder.UseUrls("https://*:8001", "http://*:8000");
                     webBuilder.UseStartup<Startup>();
                 });
     }

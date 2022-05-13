@@ -1,16 +1,15 @@
 ﻿using ACM_API.Dtos.User;
 using ACM_API.Models;
 using ACM_API.Services.AuthService;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Http.Cors;
 
 namespace ACM_API.Controllers
 {
-    [EnableCors(origins: "*", headers:"*", methods:"*" )]
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : Controller
@@ -23,6 +22,7 @@ namespace ACM_API.Controllers
         }
 
         [HttpPost("register")]
+        [EnableCors("CorsPolicy")]
         public async Task<ActionResult<ServiceResponse<long>>> Register(AddUserDto request)
         {
             //var response = await _authService.Register(
@@ -43,6 +43,7 @@ namespace ACM_API.Controllers
         }
 
         [HttpPost("login")]
+        [EnableCors("CorsPolicy")]
         public async Task<ActionResult<ServiceResponse<GetUserDto>>> Login(GetUserDto user)
         {
             var response = await _authService.Login(user.Username, user.Password);

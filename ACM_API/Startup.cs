@@ -26,6 +26,15 @@ namespace ACM_API.Startup
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                builder =>
+                {
+                    builder.WithOrigins("https://acm.qp.ru").AllowAnyMethod().AllowAnyHeader();
+                });
+                }
+            );
 
             services.AddControllers();
             services.AddDbContext<DBContext>();
@@ -41,15 +50,7 @@ namespace ACM_API.Startup
             services.AddControllersWithViews()
                     .AddNewtonsoftJson(options =>
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                    );
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy(
-                     "AllowOrigin",
-                     builder =>
-                                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-            });
+                    );          
 
         }
 
@@ -73,12 +74,8 @@ namespace ACM_API.Startup
 
             app.UseRouting();
 
-            app.UseCors(x =>
-            {
-                x.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-            });
+            //именно в этом месте
+            app.UseCors();
 
             app.UseAuthorization();
 

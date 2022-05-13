@@ -27,7 +27,6 @@ namespace ACM_API
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseUrls("https://*:6001", "http://*:6000");
                     webBuilder.UseStartup<Startup.Startup>();
                 });
     }

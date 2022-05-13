@@ -1,15 +1,15 @@
 ﻿using ACM_API.Dtos.Executor;
 using ACM_API.Services.SearchService;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Http.Cors;
 
 namespace ACM_API.Controllers
 {
-    [EnableCors(origins: "*", headers: "*", methods: "*")]
+    
     [ApiController]
     [Route("[controller]")]
     public class SearchController : Controller
@@ -22,6 +22,7 @@ namespace ACM_API.Controllers
         }
 
         [HttpGet("GetConstructionExes/{constructionId}")]
+        [EnableCors("CorsPolicy")]
         public async Task<ActionResult<List<ExecutorDto>>> GetConstructionExes(long constructionId)
         {
             var result = await _searchService.GetConstructionExes(constructionId);
