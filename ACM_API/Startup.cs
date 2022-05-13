@@ -2,6 +2,7 @@ using ACM_API.DB;
 using ACM_API.Services.AuthService;
 using ACM_API.Services.CustomerService;
 using ACM_API.Services.ExecutorService;
+using ACM_API.Services.SearchService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -36,6 +37,7 @@ namespace ACM_API.Startup
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IExecutorService, ExecutorService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ISearchService, SearchService>();
             services.AddControllersWithViews()
                     .AddNewtonsoftJson(options =>
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore

@@ -32,5 +32,7 @@ namespace ACM_API.Models.Customer
         public List<Industry> Industries { get; set; }
 
         public List<Construction> Constructions { get; set; }
+
+        public User User { get; set; }
     }
 }

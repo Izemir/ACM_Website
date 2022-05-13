@@ -22,10 +22,13 @@ namespace ACM_API.DB
 
         public DbSet<Service> Services { get; set; }
 
+        public DbSet<Construction> Constructions { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql("Host=192.168.110.105;Port=5432;Database=postgres;Username=su;Password=138200");
         }
+
 
 
     }

@@ -25,5 +25,7 @@ namespace ACM_API.Models.Executor
 
         public List<Speciality> Speciality { get; set; }
 
+        public User User { get; set; }
+
     }
 }

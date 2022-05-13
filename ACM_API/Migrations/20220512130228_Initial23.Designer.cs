@@ -3,15 +3,17 @@ using System;
 using ACM_API.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ACM_API.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20220512130228_Initial23")]
+    partial class Initial23
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,7 +86,7 @@ namespace ACM_API.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Constructions");
+                    b.ToTable("Construction");
                 });
 
             modelBuilder.Entity("ACM_API.Models.Customer.ContactPerson", b =>
@@ -140,6 +142,9 @@ namespace ACM_API.Migrations
 
                     b.Property<string>("OGRN")
                         .HasColumnType("text");
+
+                    b.Property<long?>("UserId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -216,6 +221,9 @@ namespace ACM_API.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
+
+                    b.Property<long?>("UserId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 

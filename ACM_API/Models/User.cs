@@ -17,9 +17,13 @@ namespace ACM_API.Models
 
         public DateTime DateCreated { get; set; } = DateTime.Now;
 
+
         public long? CustomerId { get; set; }
+        public Customer.Customer Customer { get; set; }        
 
         public long? ExecutorId { get; set; }
+
+        public Executor.Executor Executor { get; set; }        
 
         public string Role { get; set; } = "Заказчик";
     }

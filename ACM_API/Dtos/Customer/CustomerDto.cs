@@ -30,5 +30,7 @@ namespace ACM_API.Dtos.Customer
         public CustomerType CustomerType { get; set; }
 
         public List<Industry> Industries { get; set; }
+
+        public long UserId { get; set; }
     }
 }

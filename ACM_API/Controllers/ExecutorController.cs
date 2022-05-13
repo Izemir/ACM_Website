@@ -10,9 +10,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Http.Cors;
 
 namespace ACM_API.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     [ApiController]
     [Route("[controller]")]
     public class ExecutorController : Controller

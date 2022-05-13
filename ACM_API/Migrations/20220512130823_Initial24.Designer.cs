@@ -3,15 +3,17 @@ using System;
 using ACM_API.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ACM_API.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20220512130823_Initial24")]
+    partial class Initial24
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,7 +86,7 @@ namespace ACM_API.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Constructions");
+                    b.ToTable("Construction");
                 });
 
             modelBuilder.Entity("ACM_API.Models.Customer.ContactPerson", b =>
@@ -259,7 +261,7 @@ namespace ACM_API.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<long?>("CustomerId")
+                    b.Property<long>("CustomerId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("DateCreated")
@@ -268,7 +270,7 @@ namespace ACM_API.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<long?>("ExecutorId")
+                    b.Property<long>("ExecutorId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Password")
@@ -402,11 +404,15 @@ namespace ACM_API.Migrations
                 {
                     b.HasOne("ACM_API.Models.Customer.Customer", "Customer")
                         .WithOne("User")
-                        .HasForeignKey("ACM_API.Models.User", "CustomerId");
+                        .HasForeignKey("ACM_API.Models.User", "CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ACM_API.Models.Executor.Executor", "Executor")
                         .WithOne("User")
-                        .HasForeignKey("ACM_API.Models.User", "ExecutorId");
+                        .HasForeignKey("ACM_API.Models.User", "ExecutorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Customer");
 

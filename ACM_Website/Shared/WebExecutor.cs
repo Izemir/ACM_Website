@@ -23,5 +23,7 @@ namespace ACM_Website.Shared
         public List<Speciality> Speciality { get; set; }
 
         public string INN { get; set; }
+
+        public long UserId { get; set; }
     }
 }

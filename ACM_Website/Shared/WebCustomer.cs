@@ -29,5 +29,7 @@ namespace ACM_Website.Shared
         public CustomerType CustomerType { get; set; }
 
         public Industry Industry { get; set; }
+
+        public long UserId { get; set; }
     }
 }

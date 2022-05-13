@@ -3,15 +3,17 @@ using System;
 using ACM_API.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ACM_API.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20220512125817_Initial21")]
+    partial class Initial21
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,7 +86,7 @@ namespace ACM_API.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Constructions");
+                    b.ToTable("Construction");
                 });
 
             modelBuilder.Entity("ACM_API.Models.Customer.ContactPerson", b =>
@@ -141,9 +143,15 @@ namespace ACM_API.Migrations
                     b.Property<string>("OGRN")
                         .HasColumnType("text");
 
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerTypeId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Customers");
                 });
@@ -217,7 +225,13 @@ namespace ACM_API.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Executors");
                 });
@@ -259,7 +273,7 @@ namespace ACM_API.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<long?>("CustomerId")
+                    b.Property<long>("CustomerId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("DateCreated")
@@ -268,7 +282,7 @@ namespace ACM_API.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<long?>("ExecutorId")
+                    b.Property<long>("ExecutorId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Password")
@@ -281,12 +295,6 @@ namespace ACM_API.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CustomerId")
-                        .IsUnique();
-
-                    b.HasIndex("ExecutorId")
-                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -388,7 +396,15 @@ namespace ACM_API.Migrations
                         .WithMany()
                         .HasForeignKey("CustomerTypeId");
 
+                    b.HasOne("ACM_API.Models.User", "User")
+                        .WithOne("Customer")
+                        .HasForeignKey("ACM_API.Models.Customer.Customer", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("CustomerType");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ACM_API.Models.Customer.Industry", b =>
@@ -398,19 +414,15 @@ namespace ACM_API.Migrations
                         .HasForeignKey("CustomerId");
                 });
 
-            modelBuilder.Entity("ACM_API.Models.User", b =>
+            modelBuilder.Entity("ACM_API.Models.Executor.Executor", b =>
                 {
-                    b.HasOne("ACM_API.Models.Customer.Customer", "Customer")
-                        .WithOne("User")
-                        .HasForeignKey("ACM_API.Models.User", "CustomerId");
+                    b.HasOne("ACM_API.Models.User", "User")
+                        .WithOne("Executor")
+                        .HasForeignKey("ACM_API.Models.Executor.Executor", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("ACM_API.Models.Executor.Executor", "Executor")
-                        .WithOne("User")
-                        .HasForeignKey("ACM_API.Models.User", "ExecutorId");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Executor");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CompetencyExecutor", b =>
@@ -485,15 +497,18 @@ namespace ACM_API.Migrations
                     b.Navigation("ContactPersons");
 
                     b.Navigation("Industries");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ACM_API.Models.Executor.Executor", b =>
                 {
                     b.Navigation("Contacts");
+                });
 
-                    b.Navigation("User");
+            modelBuilder.Entity("ACM_API.Models.User", b =>
+                {
+                    b.Navigation("Customer");
+
+                    b.Navigation("Executor");
                 });
 #pragma warning restore 612, 618
         }

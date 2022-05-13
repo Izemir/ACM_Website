@@ -25,5 +25,7 @@ namespace ACM_API.Dtos.Executor
 
         public List<Competency> Competency { get; set; }
 
+        public long UserId { get; set; }
+
     }
 }

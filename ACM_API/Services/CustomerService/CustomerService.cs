@@ -33,12 +33,15 @@ namespace ACM_API.Services.CustomerService
                 var cus = _mapper.Map<Customer>(newCustomer);
                 cus.CustomerType = _context.CustomerTypes.First(i => i.Id == newCustomer.CustomerType.Id);
                 _context.Customers.Add(cus);
-                await _context.SaveChangesAsync();
-                //serviceResponse.Data = (await _context.Customers.ToListAsync()).Select(i => _mapper.Map<GetCustomerDto>(i)).ToList();
                 var user = await _context.Users.FirstAsync(i => i.Id == userId);
-                user.CustomerId = cus.Id;
+                user.Customer = cus;
                 _context.Entry(user).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+                //serviceResponse.Data = (await _context.Customers.ToListAsync()).Select(i => _mapper.Map<GetCustomerDto>(i)).ToList();
+                //var user = await _context.Users.FirstAsync(i => i.Id == userId);
+                //user.CustomerId = cus.Id;
+                //_context.Entry(user).State = EntityState.Modified;
+                //await _context.SaveChangesAsync();
                 serviceResponse.Data = _mapper.Map<CustomerDto>(cus);
             }
             catch(Exception ex)
@@ -59,11 +62,11 @@ namespace ACM_API.Services.CustomerService
                     .Include(i => i.Industries)
                     .Include(i => i.ContactPersons)
                     .Include(i => i.CustomerType)
-                    .FirstAsync(i => i.Id == user.CustomerId);
+                    .FirstAsync(i => i.User == user);
 
 
                 _context.Customers.Remove(customer);
-                user.CustomerId = null;
+                //user.CustomerId = null;
 
                 await _context.SaveChangesAsync();
 
@@ -103,11 +106,14 @@ namespace ACM_API.Services.CustomerService
         {
             var serviceResponse = new ServiceResponse<CustomerDto>();
             var customer = await _context.Customers
+                .Include(i=>i.User)
                 .Include(i=>i.CustomerType)
                 .Include(i=>i.ContactPersons)
                 .ThenInclude(j=>j.Contacts)
                 .FirstOrDefaultAsync(i=>i.Id==id);
-            serviceResponse.Data = _mapper.Map<CustomerDto>(customer);
+            var data = _mapper.Map<CustomerDto>(customer);
+            data.UserId = customer.User.Id;
+            serviceResponse.Data = data;
             return serviceResponse;
         }
 

@@ -1,4 +1,5 @@
 ﻿@page "/customer"
+@page "/customer/{customerId:long}"
 @inject ICustomerService CustomerService
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
@@ -6,6 +7,9 @@
 @if (customer == null)
 {
     <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
 }
 else
 {
@@ -43,18 +47,21 @@ else
         <span>@customer.CustomerType.TypeName</span><br />
     </div>
 
-    <MudGrid>
-        <MudItem xs="3">
-            <button class="btn btn-secondary" @onclick="@(CreationConstruction)">
-                <i class="oi oi-document"></i>&nbsp;&nbsp;&nbsp;Добавить объект
-            </button>
-        </MudItem>
-        <MudItem xs="3">
-            <button class="btn btn-danger" @onclick="@(Delete)">
-                <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить заказчика
-            </button>
-        </MudItem>
-    </MudGrid>
+    @if (IsMine)
+    {
+        <MudGrid>
+            <MudItem xs="3">
+                <button class="btn btn-secondary" @onclick="@(CreationConstruction)">
+                    <i class="oi oi-document"></i>&nbsp;&nbsp;&nbsp;Добавить объект
+                </button>
+            </MudItem>
+            <MudItem xs="3">
+                <button class="btn btn-danger" @onclick="@(Delete)">
+                    <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить заказчика
+                </button>
+            </MudItem>
+        </MudGrid>
+    }
 
 
     <MudPopover Open="@_isOpen" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.CenterCenter" TransformOrigin="Origin.CenterCenter">
@@ -88,15 +95,23 @@ else
             <MudTh>Название объекта</MudTh>
             <MudTh>Описание</MudTh>
             <MudTh>Необходимые услуги</MudTh>
-            <MudTh>-</MudTh>
+            @if (IsMine)
+            {<MudTh>-</MudTh>
+             <MudTh>-</MudTh>}
         </HeaderContent>
         <RowTemplate>
             <MudTd>@context.ConstructionName</MudTd>
             <MudTd>@context.Description</MudTd>
             <MudTd>@(ServicesToString(context.Services))</MudTd>
-            <MudTd>
-                <MudButton OnClick="@(()=>DeleteConstruction(context.Id))" Color="Color.Error">Удалить</MudButton>
-            </MudTd>
+            @if (IsMine)
+                {
+                <MudTd>
+                    <MudButton OnClick="@(() => FindExecutors(context.Id))" Color="Color.Secondary">Найти исполнителей</MudButton>
+                </MudTd>
+                <MudTd>
+                    <MudButton OnClick="@(() => DeleteConstruction(context.Id))" Color="Color.Error">Удалить</MudButton>
+                </MudTd>
+                }
         </RowTemplate>
     </MudTable>
 
@@ -107,7 +122,12 @@ else
 
 @code {
 
+    [Parameter]
+    public long? CustomerId { get; set; }
+
     public long Id { get; set; }
+
+    public bool IsMine { get; set; } = false;
 
     public long userId { get; set; }
 
@@ -127,51 +147,73 @@ else
     protected override async Task OnInitializedAsync()
     {
         userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
-        var request = await CustomerService.ExistCustomer(userId);
+        if (CustomerId == null)        {
 
-        if (request.Success && request.Data != 0)
-        {
-            Id = request.Data;
-            var customerRequest = await CustomerService.GetCustomer(Id);
-            if (customerRequest.Success)
+            var request = await CustomerService.ExistCustomer(userId);
+
+            if (request.Success)
             {
-                customer = customerRequest.Data;
-
-                var constructionResult = await CustomerService.GetConstructions(customer.Id);
-                if (constructionResult.Success)
+                if (request.Data != 0)
                 {
-                    constructions = constructionResult.Data;
+                    Id = request.Data;
+                    await GetData(Id);
                 }
                 else
                 {
-                    message = constructionResult.Message;
-                    messageCssClass = "text-danger";
+                    NavigationManager.NavigateTo("createcustomer");
                 }
-
-                newConstruction = new Construction();
-                newConstruction.Services = new List<Service>();
             }
             else
+            {
+                message = request.Message;
                 messageCssClass = "text-danger";
+            }
         }
         else
         {
-            NavigationManager.NavigateTo("createcustomer");
+            await GetData(CustomerId.Value);
         }
+    }
 
-        var serviceResult = await CustomerService.GetServices();
-        if (serviceResult.Success)
+    async Task GetData(long customerId)
+    {
+        var customerRequest = await CustomerService.GetCustomer(customerId);
+        if (customerRequest.Success)
         {
-            services = serviceResult.Data;
+            customer = customerRequest.Data;
+
+            if (customer.UserId == userId) IsMine = true;
+
+            var constructionResult = await CustomerService.GetConstructions(customer.Id);
+            if (constructionResult.Success)
+            {
+                constructions = constructionResult.Data;
+            }
+            else
+            {
+                message = constructionResult.Message;
+                messageCssClass = "text-danger";
+            }
+
+            newConstruction = new Construction();
+            newConstruction.Services = new List<Service>();
+
+            var serviceResult = await CustomerService.GetServices();
+            if (serviceResult.Success)
+            {
+                services = serviceResult.Data;
+            }
+            else
+            {
+                message = serviceResult.Message;
+                messageCssClass = "text-danger";
+            }
         }
         else
         {
-            message = serviceResult.Message;
+            message = customerRequest.Message;
             messageCssClass = "text-danger";
         }
-
-
-
     }
 
     public bool _isOpen;
@@ -195,7 +237,7 @@ else
 
     void AddService(Service service)
     {
-        if(service!=null) newConstruction.Services.Add(service);
+        if (service != null) newConstruction.Services.Add(service);
     }
 
     async Task CreateConstruction()
@@ -229,6 +271,11 @@ else
         }
     }
 
+    void FindExecutors(long id)
+    {
+        NavigationManager.NavigateTo($"searchexes/{id}");
+    }
+
     async Task Delete()
     {
         var result = await CustomerService.DeleteCustomer(userId);
@@ -246,7 +293,7 @@ else
     string ServicesToString(List<Service> services)
     {
         string result = "";
-        foreach(var s in services)
+        foreach (var s in services)
         {
             result += (s.ServiceName + "\n");
         }
