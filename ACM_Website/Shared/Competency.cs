@@ -14,6 +14,6 @@ namespace ACM_Website.Shared
 
         public long Id { get; set; }
 
-        public string CompetencyName { get; set; }
+        public string CompetencyName { get; set; } = string.Empty;
     }
 }

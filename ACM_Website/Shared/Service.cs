@@ -10,6 +10,8 @@ namespace ACM_Website.Shared
     {
         public long Id { get; set; }
 
-        public string ServiceName { get; set; }
+        public string ServiceName { get; set; } = string.Empty;
+
+        public List<Competency> Competencies { get; set; } = new List<Competency>();
     }
 }

@@ -1,5 +1,8 @@
 ﻿@inject ILocalStorageService LocalStorage
 @inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inject IAuthService AuthService
+@inject ILocalStorageService LocalStorage
 
 <div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">ACM_Website</a>
@@ -19,6 +22,16 @@
             <Authorized>
                 <li class="dropdown-divider"></li>
                 <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="compservice">
+                        <span class="oi oi-briefcase" aria-hidden="true"></span> Связывание услуг и навыков
+                    </NavLink>
+                </li>
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView>
+            <Authorized>
+                <li class="dropdown-divider"></li>
+                <li class="nav-item px-3">
                     <NavLink class="nav-link" href="profile">
                         <span class="oi oi-document" aria-hidden="true"></span> Профиль
                     </NavLink>
@@ -26,14 +39,14 @@
             </Authorized>
         </AuthorizeView>
         @*<AuthorizeView>
-        <Authorized>*@
+            <Authorized>*@
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="chat">
                 <span class="oi oi-chat" aria-hidden="true"></span> Чат
             </NavLink>
         </li>
         @*</Authorized>
-        </AuthorizeView>*@
+            </AuthorizeView>*@
         <AuthorizeView>
             <Authorized>
                 <li class="dropdown-divider"></li>
@@ -86,6 +99,22 @@
 
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
+    bool admin = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        long? userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        if (userId != null)
+        {
+            var request = await AuthService.IsAdmin(userId.Value);
+            if (request.Success)
+            {
+                admin = request.Data;
+
+            } 
+        }
+    }
+
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
@@ -95,5 +124,6 @@
     {
         await LocalStorage.RemoveItemAsync("username");
         await AuthStateProvider.GetAuthenticationStateAsync();
+        NavigationManager.NavigateTo("/");
     }
 }

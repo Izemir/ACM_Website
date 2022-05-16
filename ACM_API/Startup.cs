@@ -2,6 +2,7 @@ using ACM_API.DB;
 using ACM_API.Services.AuthService;
 using ACM_API.Services.CustomerService;
 using ACM_API.Services.ExecutorService;
+using ACM_API.Services.ModeratorService;
 using ACM_API.Services.SearchService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,7 +32,7 @@ namespace ACM_API.Startup
                 options.AddPolicy("CorsPolicy",
                 builder =>
                 {
-                    builder.WithOrigins("https://acm.qp.ru").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins("https://acm.qp.ru", "https://localhost:8001").AllowAnyMethod().AllowAnyHeader();
                 });
                 }
             );
@@ -47,6 +48,7 @@ namespace ACM_API.Startup
             services.AddScoped<IExecutorService, ExecutorService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ISearchService, SearchService>();
+            services.AddScoped<IModeratorService, ModeratorService>();
             services.AddControllersWithViews()
                     .AddNewtonsoftJson(options =>
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore

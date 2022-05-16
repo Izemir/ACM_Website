@@ -1,6 +1,7 @@
 ﻿using ACM_API.DB;
 using ACM_API.Dtos;
 using ACM_API.Dtos.Customer;
+using ACM_API.Dtos.Executor;
 using ACM_API.Models;
 using ACM_API.Models.Customer;
 using AutoMapper;
@@ -258,8 +259,23 @@ namespace ACM_API.Services.CustomerService
             var serviceResponse = new ServiceResponse<List<ServiceDto>>();
             try
             {
-                var data = await _context.Services.ToListAsync();
-                serviceResponse.Data = data.Select(i => _mapper.Map<ServiceDto>(i)).ToList();
+                var data = await _context.Services
+                    .Include(i=>i.Competency)
+                    .ToListAsync();
+                List<ServiceDto> services = new List<ServiceDto>();
+                foreach(var s in data)
+                {
+                    var serviceDto = _mapper.Map<ServiceDto>(s);
+                    List<CompetencyDto> competencies = new List<CompetencyDto>();
+                    foreach (var c in s.Competency)
+                    {
+                        competencies.Add(_mapper.Map<CompetencyDto>(c));
+                    }
+                    serviceDto.Competencies = competencies;
+                    services.Add(serviceDto);
+                    
+                }
+                serviceResponse.Data = services;
             }
             catch (Exception ex)
             {

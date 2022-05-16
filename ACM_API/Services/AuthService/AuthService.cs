@@ -20,6 +20,33 @@ namespace ACM_API.Services.AuthService
             _context = context;
             _mapper = mapper;
         }
+
+        public async Task<ServiceResponse<bool>> IsAdmin(long userId)
+        {
+            var response = new ServiceResponse<bool>();
+            try
+            {
+                var user = await _context.Users.FirstAsync(i => i.Id == userId);
+                if (user == null)
+                {
+                    response.Success = false;
+                    response.Message = "User not found.";
+                }
+                else
+                {
+                    if (user.Role == "Администратор") response.Data = true;
+                    else response.Data = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = ex.Message;
+            }
+
+            return response;
+        }
+
         public async Task<ServiceResponse<GetUserDto>> Login(string login, string password)
         {
             

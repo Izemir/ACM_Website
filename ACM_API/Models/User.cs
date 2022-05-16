@@ -26,5 +26,7 @@ namespace ACM_API.Models
         public Executor.Executor Executor { get; set; }        
 
         public string Role { get; set; } = "Заказчик";
+
+        public List<Chat.Chat> Chats { get; set; }
     }
 }

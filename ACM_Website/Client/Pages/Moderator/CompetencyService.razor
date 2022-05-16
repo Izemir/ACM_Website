@@ -1,0 +1,185 @@
+﻿@page "/compservice"
+@inject IAuthService AuthService
+@inject IExecutorService ExecutorService
+@inject ICustomerService CustomerService
+@inject IModeratorService ModeratorService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+@if (Services == null && Competencies == null)
+{
+    <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+else
+{
+    <MudPaper Class="pa-16 ma-2" Elevation="3">
+        <MudTextField @bind-Value="Service.ServiceName" Label="Услуга" Variant="Variant.Outlined"></MudTextField>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(()=>AddServiceToList(Service))">Добавить услугу в список</MudButton>
+        <MudDivider />
+        <MudTextField @bind-Value="Competency.CompetencyName" Label="Навык" Variant="Variant.Outlined"></MudTextField>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(()=>AddCompetencyToList(Competency))">Добавить навык в список</MudButton>
+        <MudDivider />
+        <MudGrid>
+            <MudItem xs="6">
+                <MudField Label="Выбранная услуга" @bind-Value="ChosenService.ServiceName">@ChosenService.ServiceName</MudField>
+                <MudSelect Label="Услуги" @bind-Value="ChosenService">
+                    @foreach (var s in Services)
+                        {
+                        <MudSelectItem Value="@s">@s.ServiceName</MudSelectItem>
+                        }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="6">
+                <MudTable Items="ChosenService.Competencies" Hover="true" Striped="true" Dense="true" Class="mb-2">
+                    <HeaderContent>
+                        <MudTh>Название навыка</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Name">@context.CompetencyName</MudTd>
+                        <MudTd DataLabel="Delete">
+                            <MudIconButton OnClick="(()=>DeleteCompetency(context))"
+                                           Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Primary"
+                                           Variant="Variant.Filled"></MudIconButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+        </MudGrid>
+        <MudSelect Label="Навыки" @bind-Value="ChosenCompetency">
+            @foreach (var c in Competencies)
+                {
+                <MudSelectItem Value="@c">@c.CompetencyName</MudSelectItem>
+                }
+        </MudSelect>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(()=>AddCompetency(ChosenCompetency))">Связать навык и услугу</MudButton>
+        <MudDivider />
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="(()=>Save())">Сохранить редактирование</MudButton>
+
+
+    </MudPaper>
+
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+
+@code {
+
+    public Competency Competency { get; set; }
+
+    public Service Service { get; set; }
+
+    public Service ChosenService { get; set; }
+
+    public List<Service> Services { get; set; }
+
+    public List<Competency> Competencies { get; set; }
+
+    public Competency ChosenCompetency { get; set; }
+
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    void AddServiceToList(Service service)
+    {
+        if (!Services.Contains(service) && !string.IsNullOrEmpty(service.ServiceName)) Services.Add(service);
+    }
+
+    void AddCompetencyToList(Competency competency)
+    {
+        if (!Competencies.Contains(competency) && !string.IsNullOrEmpty(competency.CompetencyName)) Competencies.Add(competency);
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Service = new Service();
+        Competency = new Competency();
+
+
+        long? userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        if (userId == null)
+        {
+            NavigationManager.NavigateTo("profile");
+        }
+        else
+        {
+            var request = await AuthService.IsAdmin(userId.Value);
+            if (request.Success)
+            {
+                if (request.Data == false) NavigationManager.NavigateTo("profile");
+                else
+                {
+                    await GetData();
+                    ChosenService = new Service() { ServiceName=""};
+                    ChosenCompetency = new Competency() { CompetencyName=""};
+                }
+            }
+            else
+            {
+                message = request.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+    }
+
+    async Task GetData()
+    {
+        var services = await CustomerService.GetServices();
+        if (services.Success)
+        {
+            Services = services.Data;
+        }
+        else
+        {
+            message = services.Message;
+            messageCssClass = "text-danger";
+        }
+
+        var comps = await ExecutorService.GetCompetencyList();
+        if (comps.Success)
+        {
+            Competencies = comps.Data;
+        }
+        else
+        {
+            message = comps.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+
+
+    void DeleteCompetency(Competency c)
+    {
+        ChosenService.Competencies.Remove(c);
+    }
+
+    void AddCompetency(Competency c)
+    {
+        if (!ChosenService.Competencies.Contains(c)) ChosenService.Competencies.Add(c);
+    }
+
+    async Task Save()
+    {
+        var result = await ModeratorService.SaveCompetencyService(Services);
+        if (result.Success)
+        {
+            message = "Данные успешно сохранены";
+            await GetData();
+
+        }
+        else
+        {
+            message = result.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+}

@@ -1,4 +1,5 @@
 ﻿using ACM_API.Models;
+using ACM_API.Models.Chat;
 using ACM_API.Models.Customer;
 using ACM_API.Models.Executor;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,8 @@ namespace ACM_API.DB
         public DbSet<Service> Services { get; set; }
 
         public DbSet<Construction> Constructions { get; set; }
+
+        public DbSet<Chat> Chats { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

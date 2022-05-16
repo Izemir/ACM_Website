@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MudBlazor.Services;
 using ACM_Website.Client.Services.SearchService;
+using ACM_Website.Client.Services.ModeratorService;
 
 namespace ACM_Website.Client
 {
@@ -35,6 +36,7 @@ namespace ACM_Website.Client
             builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<IExecutorService, ExecutorService>();
             builder.Services.AddScoped<ISearchService, SearchService>();
+            builder.Services.AddScoped<IModeratorService, ModeratorService>();
 
             builder.Services.AddMudServices();
 

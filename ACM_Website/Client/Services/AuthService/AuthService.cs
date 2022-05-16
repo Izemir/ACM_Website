@@ -22,15 +22,22 @@ namespace ACM_Website.Client.Services.AuthService
             apiConnection = GlobalConstants.Api.ApiAddress;
 #endif
         }
+
+        public async Task<ServiceResponse<bool>> IsAdmin(long userId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Auth/admin/{userId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+        }
+
         public async Task<ServiceResponse<WebUser>> Login(UserLogin user)
         {
-            var result = await _http.PostAsJsonAsync($"{apiConnection}/api/Auth/login/", user);
+            var result = await _http.PostAsJsonAsync($"{apiConnection}/Auth/login/", user);
             return await result.Content.ReadFromJsonAsync<ServiceResponse<WebUser>>();
         }
 
         public async Task<ServiceResponse<long>> Register(UserRegister request)
         {
-            var result = await _http.PostAsJsonAsync($"{apiConnection}/api/Auth/register", request);
+            var result = await _http.PostAsJsonAsync($"{apiConnection}/Auth/register", request);
             return await result.Content.ReadFromJsonAsync<ServiceResponse<long>>();
         }
     }

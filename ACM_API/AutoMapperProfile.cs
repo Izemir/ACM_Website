@@ -25,11 +25,12 @@ namespace ACM_API
             CreateMap<ExecutorDto, Executor>();
             CreateMap<CustomerType, CustomerTypeDto>();
             CreateMap<Competency, CompetencyDto>();
+            CreateMap<CompetencyDto, Competency>();
             CreateMap<Speciality, SpecialityDto>();
             CreateMap<ConstructionDto, Construction>();
             CreateMap<Construction, ConstructionDto>();
-            CreateMap<ServiceDto, Service>();
-            CreateMap<Service, ServiceDto>();
+            CreateMap<ServiceDto, Service>().IncludeAllDerived();
+            CreateMap<Service, ServiceDto>().IncludeAllDerived();
         }
     }
 }

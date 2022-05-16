@@ -13,7 +13,7 @@ namespace ACM_API.Models
         public long Id { get; set; }
 
         public string ServiceName { get; set; }
-        public List<Competency> Competency { get; set; }
+        public List<Competency> Competency { get; set; } = new List<Competency>();
 
         public List<Construction> Constructions { get; set; }
     }

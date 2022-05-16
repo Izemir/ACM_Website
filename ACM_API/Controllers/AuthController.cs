@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ACM_API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class AuthController : Controller
     {
@@ -47,6 +47,20 @@ namespace ACM_API.Controllers
         public async Task<ActionResult<ServiceResponse<GetUserDto>>> Login(GetUserDto user)
         {
             var response = await _authService.Login(user.Username, user.Password);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpGet("admin/{userId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<ServiceResponse<long>>> IsAdmin(long userId)
+        {
+            var response = await _authService.IsAdmin(userId);
+
             if (!response.Success)
             {
                 return BadRequest(response);
