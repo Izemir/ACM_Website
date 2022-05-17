@@ -3,15 +3,17 @@ using System;
 using ACM_API.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ACM_API.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20220517090548_Initial28")]
+    partial class Initial28
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,6 +27,9 @@ namespace ACM_API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("ChatName")
+                        .HasColumnType("text");
 
                     b.Property<long?>("CustomerId")
                         .HasColumnType("bigint");
@@ -401,17 +406,13 @@ namespace ACM_API.Migrations
 
             modelBuilder.Entity("ACM_API.Models.Chat.Chat", b =>
                 {
-                    b.HasOne("ACM_API.Models.Customer.Customer", "Customer")
+                    b.HasOne("ACM_API.Models.Customer.Customer", null)
                         .WithMany("Chats")
                         .HasForeignKey("CustomerId");
 
-                    b.HasOne("ACM_API.Models.Executor.Executor", "Executor")
+                    b.HasOne("ACM_API.Models.Executor.Executor", null)
                         .WithMany("Chats")
                         .HasForeignKey("ExecutorId");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Executor");
                 });
 
             modelBuilder.Entity("ACM_API.Models.Chat.Message", b =>

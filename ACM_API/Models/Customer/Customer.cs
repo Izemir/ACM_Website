@@ -34,5 +34,7 @@ namespace ACM_API.Models.Customer
         public List<Construction> Constructions { get; set; }
 
         public User User { get; set; }
+
+        public List<Chat.Chat> Chats { get; set; }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using ACM_API.Dtos;
+using ACM_API.Dtos.Chat;
 using ACM_API.Dtos.Customer;
 using ACM_API.Dtos.Executor;
 using ACM_API.Dtos.User;
 using ACM_API.Models;
+using ACM_API.Models.Chat;
 using ACM_API.Models.Customer;
 using ACM_API.Models.Executor;
 using AutoMapper;
@@ -31,6 +33,11 @@ namespace ACM_API
             CreateMap<Construction, ConstructionDto>();
             CreateMap<ServiceDto, Service>().IncludeAllDerived();
             CreateMap<Service, ServiceDto>().IncludeAllDerived();
+
+            CreateMap<ChatDto, Chat>();
+            CreateMap<Chat, ChatDto>();
+            CreateMap<MessageDto, Message>();
+            CreateMap<Message, MessageDto>();
         }
     }
 }

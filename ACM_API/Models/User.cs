@@ -27,6 +27,5 @@ namespace ACM_API.Models
 
         public string Role { get; set; } = "Заказчик";
 
-        public List<Chat.Chat> Chats { get; set; }
     }
 }

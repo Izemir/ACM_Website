@@ -1,6 +1,9 @@
 ﻿@page "/searchexes/{constructionId:long}"
 @inject ISearchService SearchService
 @inject NavigationManager NavigationManager
+@inject ICustomerService CustomerService
+@inject IChatService ChatService
+@inject ILocalStorageService LocalStorage
 
 @if (Executors == null)
 {
@@ -22,13 +25,13 @@ else
             <MudTd>@context.Name</MudTd>
             <MudTd>@context.Contacts[0].Address</MudTd>
             <MudTd>
-                <MudButton OnClick="@(() => ShowExecutor(context.Id))" 
+                <MudButton OnClick="@(() => ShowExecutor(context.Id))"
                            Variant="Variant.Filled"
                            StartIcon="@Icons.Material.Filled.Preview"
                            Color="Color.Info">Посмотреть профиль</MudButton>
             </MudTd>
             <MudTd>
-                <MudButton 
+                <MudButton OnClick="@(() => StartChat(context.Id))"
                            StartIcon="@Icons.Material.Filled.Send"
                            Variant="Variant.Filled"
                            Color="Color.Primary">Написать</MudButton>
@@ -75,5 +78,40 @@ else
     void ShowExecutor(long id)
     {
         NavigationManager.NavigateTo($"/executor/{id}");
+    }
+
+    async Task StartChat(long id)
+    {
+        var userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        var customer = await CustomerService.ExistCustomer(userId);
+        if (customer.Success && customer.Data != 0)
+        {
+            long chatId = 0;
+            var existChat = await ChatService.ExistChat(customer.Data, id);
+            if (existChat.Success && existChat.Data != 0)
+            {
+                chatId = existChat.Data;
+                NavigationManager.NavigateTo($"/chat/{chatId}");
+            }
+            else
+            {
+                var newChat = await ChatService.StartNewChat(customer.Data, id);
+                if (newChat.Success)
+                {
+                    chatId = newChat.Data.Id;
+                    NavigationManager.NavigateTo($"/chat/{chatId}");
+                }
+                else
+                {
+                    message = newChat.Message;
+                    messageCssClass = "text-danger";
+                }
+            }
+        }
+        else
+        {
+            message = "Нет такого заказчика";
+            messageCssClass = "text-danger";
+        }
     }
 }

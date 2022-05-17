@@ -1,0 +1,79 @@
+﻿@page "/executorchats/{executorId:long}"
+@inject NavigationManager NavigationManager
+@inject IChatService ChatService
+
+@if (Chats == null)
+{
+    <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+else
+{
+    <h3>Чаты исполнителя</h3>
+
+    <MudTable Items="@Chats" Hover="true">
+        <HeaderContent>
+            <MudTh>Название</MudTh>
+            <MudTh>-</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.ChatName</MudTd>
+            <MudTd>
+                <MudButton OnClick="@(() => OpenChat(context.Id))"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.Send"
+                           Color="Color.Info">Открыть чат</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+
+
+
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public long? ExecutorId { get; set; }
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    List<WebChat> Chats { get; set; }
+
+    WebExecutor Executor { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ExecutorId != null)
+        {
+            var chats = await ChatService.GetExecutorChats(ExecutorId.Value);
+            if (chats.Success)
+            {
+                Chats = chats.Data;
+            }
+            else
+            {
+                message = chats.Message;
+                messageCssClass = "text-danger";
+            }
+
+        }
+        else
+        {
+            message = "Нет исполнителя";
+            messageCssClass = "text-danger";
+        }
+    }
+
+    void OpenChat(long chatId)
+    {
+        NavigationManager.NavigateTo($"/chat/{chatId}");
+    }
+
+}

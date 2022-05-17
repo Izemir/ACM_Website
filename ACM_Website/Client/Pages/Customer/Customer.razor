@@ -49,18 +49,23 @@ else
 
     @if (IsMine)
     {
-        <MudGrid>
-            <MudItem xs="3">
-                <button class="btn btn-secondary" @onclick="@(CreationConstruction)">
-                    <i class="oi oi-document"></i>&nbsp;&nbsp;&nbsp;Добавить объект
-                </button>
-            </MudItem>
-            <MudItem xs="3">
-                <button class="btn btn-danger" @onclick="@(Delete)">
-                    <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить заказчика
-                </button>
-            </MudItem>
-        </MudGrid>
+<MudGrid>
+    <MudItem xs="3">
+        <button class="btn btn-secondary" @onclick="@(CreationConstruction)">
+            <i class="oi oi-document"></i>&nbsp;&nbsp;&nbsp;Добавить объект
+        </button>
+    </MudItem>
+    <MudItem xs="3">
+        <button class="btn btn-secondary" @onclick="@(()=>ShowChats(customer.Id))">
+            <i class="oi oi-chat"></i>&nbsp;&nbsp;&nbsp;Чаты заказчика
+        </button>
+    </MudItem>
+    <MudItem xs="3">
+        <button class="btn btn-danger" @onclick="@(Delete)">
+            <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить заказчика
+        </button>
+    </MudItem>
+</MudGrid>
     }
 
 
@@ -299,5 +304,10 @@ else
         }
 
         return result;
+    }
+
+    void ShowChats(long customerId)
+    {
+        NavigationManager.NavigateTo($"customerchats/{customerId}");
     }
 }

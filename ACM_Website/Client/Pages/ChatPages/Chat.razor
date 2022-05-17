@@ -1,0 +1,98 @@
+﻿@page "/chat/{chatId:long}"
+@inject NavigationManager NavigationManager
+@inject IChatService ChatService
+@inject ILocalStorageService LocalStorage
+@inject ICustomerService CustomerService
+
+@if (WebChat == null)
+{
+    <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+else
+{
+    <h3>Чаты заказчика</h3>
+
+    @if (WebChat.Messages.Count > 0)
+    {
+        <MudPaper Height="400px" Width="150%">
+            <MudContainer MaxWidth="MaxWidth.Small">
+                    @foreach (var message in WebChat.Messages)
+                    {
+                        <MudField Label="@message.SenderName" Variant="Variant.Outlined">@message.Text</MudField>
+                    }
+            </MudContainer>
+        </MudPaper>
+    }
+    <MudTextField @bind-Value="TextMessage" Label="Писать тут" Variant="Variant.Text"></MudTextField>
+    <MudButton OnClick="@(() => SendMessage(TextMessage))"
+               StartIcon="@Icons.Material.Filled.Send"
+               Variant="Variant.Filled"
+               Color="Color.Primary">Отправить сообщение</MudButton>
+
+
+
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+
+@code{
+    [Parameter]
+    public long? ChatId { get; set; }
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    WebChat WebChat { get; set; }
+
+    public long userId { get; set; }
+
+    public string TextMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        if (ChatId != null)
+        {
+            var chat = await ChatService.GetChat(ChatId.Value, userId);
+            if (chat.Success)
+            {
+                WebChat = chat.Data;
+            }
+            else
+            {
+                message = chat.Message;
+                messageCssClass = "text-danger";
+            }
+
+        }
+        else
+        {
+            message = "Чат не найден";
+            messageCssClass = "text-danger";
+        }
+    }
+
+    async Task SendMessage(string text)
+    {
+        var newMessage = new Message()
+        {
+            Text = text,
+            SenderName = WebChat.SenderName
+        };
+        var request = await ChatService.SendMessage(WebChat.Id, newMessage);
+        if (request.Success)
+        {
+            TextMessage = string.Empty;
+            WebChat = request.Data;
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+}

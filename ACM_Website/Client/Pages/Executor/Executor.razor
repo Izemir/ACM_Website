@@ -45,6 +45,10 @@ else
 
     @if (IsMine)
     {
+        <MudButton class="btn-dark" @onclick="@(()=>ShowChats(executor.Id))">
+            <i class="oi oi-chat"></i>&nbsp;&nbsp;&nbsp;Чаты исполнителя
+        </MudButton>
+
         <MudButton class="btn btn-danger" @onclick="@(Delete)">
             <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить
         </MudButton>
@@ -131,6 +135,11 @@ else
             message = result.Message;
             messageCssClass = "text-danger";
         }
+    }
+
+    void ShowChats(long executorId)
+    {
+        NavigationManager.NavigateTo($"executorchats/{executorId}");
     }
 
 }

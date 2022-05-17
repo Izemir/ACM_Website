@@ -27,5 +27,7 @@ namespace ACM_API.Models.Executor
 
         public User User { get; set; }
 
+        public List<Chat.Chat> Chats { get; set; }
+
     }
 }
