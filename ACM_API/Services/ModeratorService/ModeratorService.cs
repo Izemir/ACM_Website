@@ -50,7 +50,7 @@ namespace ACM_API.Services.ModeratorService
 
                     foreach (var c in competencies)
                     {
-                        if (service.Competency.Find(i=>i.Id==c.Id)==null) service.Competency.Add(c);
+                        if (c.Id==0) service.Competency.Add(new Competency() { CompetencyName=c.CompetencyName});
                     }
 
                     //_context.Entry(service).State = EntityState.Modified;

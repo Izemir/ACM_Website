@@ -88,12 +88,20 @@ else
 
     void AddServiceToList(Service service)
     {
-        if (!Services.Contains(service) && !string.IsNullOrEmpty(service.ServiceName)) Services.Add(service);
+        if ((Services.Where(i=>i.ServiceName==service.ServiceName).Count()==0) && !string.IsNullOrEmpty(service.ServiceName))
+        {
+            Services.Add(new Service() { ServiceName=service.ServiceName});
+            Service = new Service();
+        }
     }
 
     void AddCompetencyToList(Competency competency)
     {
-        if (!Competencies.Contains(competency) && !string.IsNullOrEmpty(competency.CompetencyName)) Competencies.Add(competency);
+        if ((Competencies.Where(i=>i.CompetencyName==competency.CompetencyName).Count()==0) && !string.IsNullOrEmpty(competency.CompetencyName))
+        {
+            Competencies.Add(new Competency() { CompetencyName=competency.CompetencyName});
+            Competency = new Competency();
+        }
     }
 
 
@@ -174,7 +182,8 @@ else
         {
             message = "Данные успешно сохранены";
             await GetData();
-
+            ChosenService = new Service() { ServiceName = "" };
+            ChosenCompetency = new Competency() { CompetencyName = "" };
         }
         else
         {

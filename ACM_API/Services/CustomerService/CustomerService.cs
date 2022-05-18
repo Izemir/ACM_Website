@@ -62,10 +62,35 @@ namespace ACM_API.Services.CustomerService
                 var customer = await _context.Customers
                     .Include(i => i.Industries)
                     .Include(i => i.ContactPersons)
+                    .ThenInclude(j=>j.Contacts)
                     .Include(i => i.CustomerType)
+                    .Include(i=>i.Chats)
+                    .ThenInclude(j=>j.Messages)
+                    .Include(i=>i.Constructions)
                     .FirstAsync(i => i.User == user);
 
+                foreach(var person in customer.ContactPersons)
+                {
+                    foreach(var c in person.Contacts)
+                    {
+                        _context.Entry(c).State = EntityState.Deleted;
+                    }
+                    _context.Entry(person).State = EntityState.Deleted;
+                }
+                foreach (var chat in customer.Chats)
+                {
+                    foreach (var message in chat.Messages)
+                    {
+                        _context.Entry(message).State = EntityState.Deleted;
+                    }
+                    _context.Entry(chat).State = EntityState.Deleted;
+                }
+                foreach (var c in customer.Constructions)
+                {
+                    _context.Entry(c).State = EntityState.Deleted;
+                }
 
+                customer.User = null;
                 _context.Customers.Remove(customer);
                 //user.CustomerId = null;
 

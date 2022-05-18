@@ -63,9 +63,24 @@ namespace ACM_API.Services.ExecutorService
                     .Include(i=>i.Speciality)
                     .Include(i=>i.Competency)
                     .Include(i=>i.Contacts)
+                    .Include(i => i.Chats)
+                    .ThenInclude(j => j.Messages)
                     .FirstAsync(i=>i.User==user);
 
-                
+                foreach (var chat in executor.Chats)
+                {
+                    foreach(var message in chat.Messages)
+                    {
+                        _context.Entry(message).State = EntityState.Deleted;
+                    }
+                    _context.Entry(chat).State = EntityState.Deleted;
+                }
+                foreach(var contact in executor.Contacts)
+                {
+                    _context.Entry(contact).State = EntityState.Deleted;
+                }
+
+                user.Executor = null;
                 _context.Executors.Remove(executor);
                 //user.ExecutorId = null;
 
