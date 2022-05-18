@@ -1,0 +1,67 @@
+﻿@inject ISnackbar Snackbar
+@inject ICustomerService CustomerService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Новый объект
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="Construction.ConstructionName" Label="Название объекта" Variant="Variant.Text"></MudTextField>
+        <MudTextField T="string" @bind-Value="Construction.Description" Label="Описание" Variant="Variant.Text" Lines="5" />
+        <MudSelect T="Service" Placeholder="Добавьте услуги" Label="Услуги" MultiSelection="true" @bind-SelectedValues="SelectedServices" ToStringFunc="@ToString">
+            @foreach (var service in Services)
+            {
+                <MudSelectItem Value="service">@service.ServiceName</MudSelectItem>
+            }
+        </MudSelect>
+        @*<MudTextField Value="@Error" ReadOnly="true" />*@
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Отмена</MudButton>
+        <MudButton Color="Color.Primary" OnClick="SaveConstruction">Сохранить объект</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public long CustomerId { get; set; }
+
+    [Parameter] public List<Service> Services { get; set; } = new List<Service>();
+
+    public string Error { get; set; } = string.Empty;
+
+    public Service ServiceValue { get; set; } = new Service();
+
+    private IEnumerable<Service> SelectedServices { get; set; } = new HashSet<Service>();
+
+    public Construction Construction { get; set; } = new Construction();
+
+    private string ToString(Service s)
+       => s is null ? string.Empty : $"{s.ServiceName}";
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async void SaveConstruction()
+    {
+        Construction.Services = SelectedServices.ToList();
+        var request = await CustomerService.AddConstruction(CustomerId, Construction);
+        if (request.Success)
+        {
+            Snackbar.Add("Объект добавлен", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(0));
+        }
+        else
+        {
+            Snackbar.Add("Ошибка", Severity.Error);
+        }
+
+
+    }
+
+}

@@ -6,37 +6,41 @@
 
 @if (WebChat == null)
 {
-    <span>Загрузка...</span>
-    <div class="@messageCssClass">
-        <span>@message</span>
-    </div>
+<span>Загрузка...</span>
+<div class="@messageCssClass">
+    <span>@message</span>
+</div>
 }
 else
 {
-    <h3>Чаты заказчика</h3>
+<h3>Чаты заказчика</h3>
 
-    @if (WebChat.Messages.Count > 0)
+@if (WebChat.Messages.Count > 0)
     {
-        <MudPaper Height="400px" Width="150%">
-            <MudContainer MaxWidth="MaxWidth.Small">
-                    @foreach (var message in WebChat.Messages)
+<MudPaper Height="400px" Width="150%">
+    <MudContainer MaxWidth="MaxWidth.Small">
+        @foreach (var message in WebChat.Messages)
                     {
-                        <MudField Label="@message.SenderName" Variant="Variant.Outlined">@message.Text</MudField>
+        <MudField Label="@message.SenderName" Variant="Variant.Outlined">@message.Text</MudField>
                     }
-            </MudContainer>
-        </MudPaper>
+    </MudContainer>
+</MudPaper>
     }
-    <MudTextField @bind-Value="TextMessage" Label="Писать тут" Variant="Variant.Text"></MudTextField>
-    <MudButton OnClick="@(() => SendMessage(TextMessage))"
-               StartIcon="@Icons.Material.Filled.Send"
-               Variant="Variant.Filled"
-               Color="Color.Primary">Отправить сообщение</MudButton>
+<MudTextField @bind-Value="TextMessage" Label="Писать тут" Variant="Variant.Text"></MudTextField>
+<MudButton OnClick="@(() => SendMessage(TextMessage))"
+           StartIcon="@Icons.Material.Filled.Send"
+           Variant="Variant.Filled"
+           Color="Color.Primary">Отправить сообщение</MudButton>
+<MudButton OnClick="@(() => UpdateChat())"
+           StartIcon="@Icons.Material.Filled.Update"
+           Variant="Variant.Filled"
+           Color="Color.Primary">Обновить чат</MudButton>
 
 
 
-    <div class="@messageCssClass">
-        <span>@message</span>
-    </div>
+<div class="@messageCssClass">
+    <span>@message</span>
+</div>
 }
 
 @code{
@@ -72,6 +76,21 @@ else
         else
         {
             message = "Чат не найден";
+            messageCssClass = "text-danger";
+        }
+    }
+
+    async Task UpdateChat()
+    {
+        var request = await ChatService.GetChat(WebChat.Id, userId);
+        if (request.Success)
+        {
+            TextMessage = string.Empty;
+            WebChat = request.Data;
+        }
+        else
+        {
+            message = request.Message;
             messageCssClass = "text-danger";
         }
     }

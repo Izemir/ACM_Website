@@ -3,6 +3,7 @@
 @inject ICustomerService CustomerService
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 
 @if (customer == null)
 {
@@ -49,23 +50,23 @@ else
 
     @if (IsMine)
     {
-<MudGrid>
-    <MudItem xs="3">
-        <button class="btn btn-secondary" @onclick="@(CreationConstruction)">
-            <i class="oi oi-document"></i>&nbsp;&nbsp;&nbsp;Добавить объект
-        </button>
-    </MudItem>
-    <MudItem xs="3">
-        <button class="btn btn-secondary" @onclick="@(()=>ShowChats(customer.Id))">
-            <i class="oi oi-chat"></i>&nbsp;&nbsp;&nbsp;Чаты заказчика
-        </button>
-    </MudItem>
-    <MudItem xs="3">
-        <button class="btn btn-danger" @onclick="@(Delete)">
-            <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить заказчика
-        </button>
-    </MudItem>
-</MudGrid>
+        <MudGrid>
+            <MudItem xs="3">
+                <button class="btn btn-secondary" @onclick="@(CreationConstruction)">
+                    <i class="oi oi-document"></i>&nbsp;&nbsp;&nbsp;Добавить объект
+                </button>
+            </MudItem>
+            <MudItem xs="3">
+                <button class="btn btn-secondary" @onclick="@(()=>ShowChats(customer.Id))">
+                    <i class="oi oi-chat"></i>&nbsp;&nbsp;&nbsp;Чаты заказчика
+                </button>
+            </MudItem>
+            <MudItem xs="3">
+                <button class="btn btn-danger" @onclick="@(Delete)">
+                    <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить заказчика
+                </button>
+            </MudItem>
+        </MudGrid>
     }
 
 
@@ -102,7 +103,7 @@ else
             <MudTh>Необходимые услуги</MudTh>
             @if (IsMine)
             {<MudTh>-</MudTh>
-             <MudTh>-</MudTh>}
+                <MudTh>-</MudTh>}
         </HeaderContent>
         <RowTemplate>
             <MudTd>@context.ConstructionName</MudTd>
@@ -152,7 +153,8 @@ else
     protected override async Task OnInitializedAsync()
     {
         userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
-        if (CustomerId == null)        {
+        if (CustomerId == null)
+        {
 
             var request = await CustomerService.ExistCustomer(userId);
 
@@ -223,13 +225,33 @@ else
 
     public bool _isOpen;
 
-    public void CreationConstruction()
+    public async Task CreationConstruction()
     {
-        if (_isOpen)
-            _isOpen = false;
-        else
+        //if (_isOpen)
+        //    _isOpen = false;
+        //else
+        //{
+        //    _isOpen = true;
+        //}
+
+        var parameters = new DialogParameters { ["CustomerId"] = customer.Id, ["Services"] = services };
+        DialogOptions maxWidth = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        var dialog = DialogService.Show<ConstructionDialog>("Новый объект", parameters, maxWidth);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
         {
-            _isOpen = true;
+            var request = await CustomerService.GetConstructions(customer.Id);
+            if (request.Success)
+            {
+                constructions = request.Data;
+            }
+            else
+            {
+                message = request.Message;
+                messageCssClass = "text-danger";
+            }
         }
 
     }
