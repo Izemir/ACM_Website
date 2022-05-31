@@ -47,10 +47,10 @@ namespace ACM_API.Services.AuthService
             return response;
         }
 
-        public async Task<ServiceResponse<GetUserDto>> Login(string login, string password)
+        public async Task<ServiceResponse<UserDto>> Login(string login, string password)
         {
             
-            var response = new ServiceResponse<GetUserDto>();
+            var response = new ServiceResponse<UserDto>();
             try
             {
                 var user = await _context.Users
@@ -67,7 +67,7 @@ namespace ACM_API.Services.AuthService
                 }
                 else
                 {
-                    response.Data = _mapper.Map<GetUserDto>(user);
+                    response.Data = _mapper.Map<UserDto>(user);
                 }
             }
             catch(Exception ex)
@@ -79,7 +79,7 @@ namespace ACM_API.Services.AuthService
             return response;
         }
 
-        public async Task<ServiceResponse<long>> Register(AddUserDto newUser, string password)
+        public async Task<ServiceResponse<long>> Register(UserDto newUser, string password)
         {            
             try
             {

@@ -27,5 +27,7 @@ namespace ACM_API.Dtos.Executor
 
         public long UserId { get; set; }
 
+        public bool Approved { get; set; }
+
     }
 }

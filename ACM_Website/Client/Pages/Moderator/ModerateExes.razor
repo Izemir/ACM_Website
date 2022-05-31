@@ -1,0 +1,90 @@
+﻿@page "/moderateexes"
+@inject IModeratorService ModeratorService
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
+
+@if (Executors == null)
+{
+    <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+else
+{
+    <MudTable Items="@Executors" Hover="true">
+        <HeaderContent>
+            <MudTh>Имя</MudTh>
+            <MudTh>Контактные данные</MudTh>
+            <MudTh>-</MudTh>
+            <MudTh>-</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Contacts[0].Address</MudTd>
+            <MudTd>
+                <MudButton OnClick="@(() => ShowExecutor(context.Id))"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.Preview"
+                           Color="Color.Info">Посмотреть профиль</MudButton>
+            </MudTd>
+            <MudTd>
+                <MudButton OnClick="@(() => ApproveExecutor(context))"
+                           StartIcon="@Icons.Material.Filled.Approval"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="context.Approved">Одобрить</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+
+@code {
+    List<WebExecutor> Executors;
+
+    public long UserId { get; set; }
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        UserId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+
+        var request = await ModeratorService.GetExecutorsForApproval();
+        if (request.Success)
+        {
+            Executors = request.Data;
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    void ShowExecutor(long id)
+    {
+        NavigationManager.NavigateTo($"/executor/{id}");
+    }
+
+    async Task ApproveExecutor(WebExecutor executor)
+    {
+        var userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        var request = await ModeratorService.ApproveExecutor(userId, executor.Id);
+
+        if (request.Success)
+        {
+            executor = request.Data;
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+}

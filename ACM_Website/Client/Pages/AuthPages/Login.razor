@@ -50,6 +50,19 @@
 
             await LocalStorage.SetItemAsync("username", result.Data.Username);
             await LocalStorage.SetItemAsync("id", result.Data.Id);
+            switch (result.Data.Role)
+            {
+                case "Администратор":
+                    await LocalStorage.SetItemAsync("role", new String("-"));
+                    break;
+                case "Заказчик":
+                    await LocalStorage.SetItemAsync("role", new String("Customer"));
+                    break;
+                case "Исполнитель":
+                    await LocalStorage.SetItemAsync("role", new String("Executor"));
+                    break;
+                default: break;
+            }
             await AuthenticationStateProvider.GetAuthenticationStateAsync();
             NavigationManager.NavigateTo(returnUrl);
         }

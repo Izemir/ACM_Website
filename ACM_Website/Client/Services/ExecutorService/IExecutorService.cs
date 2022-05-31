@@ -14,5 +14,6 @@ namespace ACM_Website.Client.Services.ExecutorService
         Task<ServiceResponse<List<Competency>>> GetCompetencyList();
         Task<ServiceResponse<List<Speciality>>> GetSpecialityList();
         Task<ServiceResponse<bool>> DeleteExecutor(long userId);
+        Task<ServiceResponse<WebExecutor>> UpdateExecutor(WebExecutor executor);
     }
 }

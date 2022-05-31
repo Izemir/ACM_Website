@@ -1,10 +1,20 @@
 ﻿@page "/createexecutor"
+@page "/createexecutor/{executorId:long}"
 @inject IExecutorService ExecutorService
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
 
 <h3>Создание исполнителя</h3>
 
+@if (ExecutorId!=null && executor==null)
+{
+    <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+else
+{
 <MudGrid>
     <MudItem xs="7">
         <EditForm Model="executor">
@@ -29,14 +39,14 @@
                 <label for="speciality">Специальность</label>
                 <InputSelect id="speciality" @bind-Value="specId" class="form-control">
                     @if (SpecialityList != null)
-                    {                        
+                    {
                         @foreach (var spec in SpecialityList)
                         {
                             <option value="@spec.Id">@spec.SpecialityName</option>
                         }
                     }
                 </InputSelect>
-                <button class="btn btn-secondary" @onclick="(()=>AddSpeciality(specId))">Добавить специальность</button>
+                <button class="btn btn-secondary" @onclick="(() => AddSpeciality(specId))">Добавить специальность</button>
             </div>
             <div class="form-group">
                 <label for="competency">Навыки</label>
@@ -46,9 +56,9 @@
                         <option value="@comp.Id">@comp.CompetencyName</option>
                     }
                 </InputSelect>
-                <button class="btn btn-secondary" @onclick="(()=>AddCompetency(compId))">Добавить навык</button>
-            </div>            
-            
+                <button class="btn btn-secondary" @onclick="(() => AddCompetency(compId))">Добавить навык</button>
+            </div>
+
         </EditForm>
     </MudItem>
     <MudItem xs="5">
@@ -60,29 +70,29 @@
             <RowTemplate>
                 <MudTd DataLabel="Name">@context.SpecialityName</MudTd>
                 <MudTd DataLabel="Delete">
-                    <MudIconButton OnClick="(()=>DeleteSpeciality(context.Id))"
+                    <MudIconButton OnClick="(() => DeleteSpeciality(context.Id))"
                                    Icon="@Icons.Material.Filled.Delete"
                                    Color="Color.Primary"
                                    Variant="Variant.Filled"></MudIconButton>
                 </MudTd>
             </RowTemplate>
         </MudTable>
-        <MudDivider/>
-            <MudTable Items="ChosenCompetencyList" Hover="true" Striped="true" Dense="true" Class="mb-2">
-                <HeaderContent>
-                    <MudTh>Название</MudTh>
-                    <MudTh></MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Name">@context.CompetencyName</MudTd>
-                    <MudTd DataLabel="Delete">
-                        <MudIconButton OnClick="(()=>DeleteCompetency(context.Id))"
-                                       Icon="@Icons.Material.Filled.Delete"
-                                       Color="Color.Primary"
-                                       Variant="Variant.Filled"></MudIconButton>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+        <MudDivider />
+        <MudTable Items="ChosenCompetencyList" Hover="true" Striped="true" Dense="true" Class="mb-2">
+            <HeaderContent>
+                <MudTh>Название</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.CompetencyName</MudTd>
+                <MudTd DataLabel="Delete">
+                    <MudIconButton OnClick="(() => DeleteCompetency(context.Id))"
+                                   Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Filled"></MudIconButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
     </MudItem>
 </MudGrid>
 
@@ -90,14 +100,17 @@
 <div class="@messageCssClass">
     <span>@message</span>
 </div>
-
+}
 
 
 @code {
 
+    [Parameter]
+    public long? ExecutorId { get; set; }
+
     private long specId { get; set; } = 0;
     private long compId { get; set; } = 0;
-    private WebExecutor executor = new WebExecutor();
+    private WebExecutor executor { get; set; }
 
     string message = string.Empty;
     string messageCssClass = string.Empty;
@@ -111,9 +124,50 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ChosenSpecialityList = new List<Speciality>();
-        ChosenCompetencyList = new List<Competency>();
-        executor.Contacts = new List<Contact>() { new Contact() { Address = "" } };
+        if (ExecutorId != null)
+        {
+            var userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+            var request = await ExecutorService.ExistExecutor(userId);
+            if (request.Success)
+            {
+                if (request.Data == ExecutorId)
+                {
+                    var oldExecutor = await ExecutorService.GetExecutor(ExecutorId.Value);
+                    if (oldExecutor.Success)
+                    {
+                        ChosenCompetencyList = oldExecutor.Data.Competency;
+                        ChosenSpecialityList = oldExecutor.Data.Speciality;
+                        executor = oldExecutor.Data;
+
+                    }
+                    else
+                    {
+                        message = request.Message;
+                        messageCssClass = "text-danger";
+                    }
+                }
+                else
+                {
+                    message = "Нет прав на изменение";
+                    messageCssClass = "text-danger";
+                }
+
+            }
+            else
+            {
+                message = request.Message;
+                messageCssClass = "text-danger";
+            }
+
+        }
+        else
+        {
+
+            executor = new WebExecutor();
+            ChosenSpecialityList = new List<Speciality>();
+            ChosenCompetencyList = new List<Competency>();
+            executor.Contacts = new List<Contact>() { new Contact() { Address = "" } };
+        }
 
         SpecialityList = new List<Speciality>();
 
@@ -131,6 +185,7 @@
             CompetencyList = comps.Data;
             compId = CompetencyList[0].Id;
         }
+
 
     }
 
@@ -171,20 +226,42 @@
         }
         else
         {
-
-            var id = await LocalStorage.GetItemAsStringAsync("id");
-            executor.Competency = ChosenCompetencyList;
-            executor.Speciality = ChosenSpecialityList;
-            var result = await ExecutorService.AddExecutor(executor, long.Parse(id));
-
-            message = result.Message;
-            if (result.Success)
+            if (ExecutorId != null)
             {
-                messageCssClass = "text-success";
-                NavigationManager.NavigateTo("executor");
+                executor.Competency = ChosenCompetencyList;
+                executor.Speciality = ChosenSpecialityList;
+                var result = await ExecutorService.UpdateExecutor(executor);
+                message = result.Message;
+                if (result.Success)
+                {
+                    NavigationManager.NavigateTo("executor");
+                }
+                else
+                {
+                    message = result.Message;
+                    messageCssClass = "text-danger";
+                }
             }
             else
-                messageCssClass = "text-danger";
+            {
+                var id = await LocalStorage.GetItemAsStringAsync("id");
+                executor.Competency = ChosenCompetencyList;
+                executor.Speciality = ChosenSpecialityList;
+                var result = await ExecutorService.AddExecutor(executor, long.Parse(id));
+
+                message = result.Message;
+                if (result.Success)
+                {
+                    NavigationManager.NavigateTo("executor");
+                }
+                else
+                {
+                    message = result.Message;
+                    messageCssClass = "text-danger";
+                }
+            }
+
+
         }
     }
 }

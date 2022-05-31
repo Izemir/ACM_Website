@@ -154,10 +154,30 @@ namespace ACM_API.Services.ExecutorService
             var serviceResponse = new ServiceResponse<ExecutorDto>();
             try
             {
-                var dBExecutor = await _context.Executors.FindAsync(updatedExecutor.Id);
+                var dBExecutor = await _context.Executors
+                    .Include(i => i.Speciality)
+                    .Include(i => i.Competency)
+                    .ThenInclude(c=>c.Executor)
+                    .Include(i => i.Contacts)
+                    .FirstOrDefaultAsync(i => i.Id == updatedExecutor.Id);
+
+                if (dBExecutor == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такого исполнителя";
+                    return serviceResponse;
+                }
+
+                dBExecutor.Competency = _context.Competencies.Where(i => updatedExecutor.Competency.Contains(i)).ToList();
+                dBExecutor.Speciality = _context.Specialities.Where(i => updatedExecutor.Speciality.Contains(i)).ToList();
 
                 dBExecutor.Name = updatedExecutor.Name;
-                dBExecutor.Speciality = updatedExecutor.Speciality;
+                dBExecutor.FullName = updatedExecutor.FullName;
+                dBExecutor.INN = updatedExecutor.INN;
+                dBExecutor.Contacts = updatedExecutor.Contacts;
+                dBExecutor.Approved = false;
+
+                _context.Entry(dBExecutor).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
 

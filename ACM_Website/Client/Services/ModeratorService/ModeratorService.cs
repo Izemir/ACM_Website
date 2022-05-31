@@ -25,8 +25,19 @@ namespace ACM_Website.Client.Services.ModeratorService
 #endif
             }
 
+        public async Task<ServiceResponse<WebExecutor>> ApproveExecutor(long userId, long executorId)
+        {
+            var result = await _http.PutAsJsonAsync($"{apiConnection}/Moderator/ApproveExe/{userId}/{executorId}",0);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<WebExecutor>>();
+        }
 
-            public async Task<ServiceResponse<bool>> SaveCompetencyService(List<Service> data)
+        public async Task<ServiceResponse<List<WebExecutor>>> GetExecutorsForApproval()
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Moderator/GetExes");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<WebExecutor>>>();
+        }
+
+        public async Task<ServiceResponse<bool>> SaveCompetencyService(List<Service> data)
         {
             var result = await _http.PutAsJsonAsync($"{apiConnection}/Moderator/CompService", data);
             return await result.Content.ReadFromJsonAsync<ServiceResponse<bool>>();

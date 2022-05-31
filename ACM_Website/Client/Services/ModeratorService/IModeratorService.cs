@@ -9,5 +9,9 @@ namespace ACM_Website.Client.Services.ModeratorService
     public interface IModeratorService
     {
         Task<ServiceResponse<bool>> SaveCompetencyService(List<Service> services);
+
+        Task<ServiceResponse<List<WebExecutor>>> GetExecutorsForApproval();
+
+        Task<ServiceResponse<WebExecutor>> ApproveExecutor(long userId, long executorId);
     }
 }

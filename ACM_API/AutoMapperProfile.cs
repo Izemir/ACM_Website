@@ -21,8 +21,8 @@ namespace ACM_API
         {
             CreateMap<Customer, CustomerDto>();
             CreateMap<CustomerDto, Customer>();
-            CreateMap<User, GetUserDto>();
-            CreateMap<AddUserDto, User>();
+            CreateMap<User, UserDto>();
+            CreateMap<UserDto, User>();
             CreateMap<Executor, ExecutorDto>();
             CreateMap<ExecutorDto, Executor>();
             CreateMap<CustomerType, CustomerTypeDto>();

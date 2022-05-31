@@ -1,6 +1,8 @@
 ﻿
 using ACM_API.DB;
 using ACM_API.Dtos;
+using ACM_API.Dtos.Executor;
+using ACM_API.Helpers;
 using ACM_API.Models;
 using ACM_API.Models.Executor;
 using AutoMapper;
@@ -22,6 +24,77 @@ namespace ACM_API.Services.ModeratorService
         {
             _context = context;
             _mapper = mapper;
+        }
+
+        public async Task<ServiceResponse<ExecutorDto>> ApproveExecutor(long userId, long executorId)
+        {
+            var serviceResponse = new ServiceResponse<ExecutorDto>();
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(i => i.Id == userId);
+                if (user == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такого пользователя";
+                    return serviceResponse;
+                }
+                if (user.Role != UserRoles.Администратор.ToString())
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет прав для изменения";
+                    return serviceResponse;
+                }
+
+                var executor = await _context.Executors
+                .Include(i => i.User)
+                .Include(i => i.Competency)
+                .Include(i => i.Contacts)
+                .Include(i => i.Speciality)
+                .FirstAsync(i => i.Id == executorId);
+
+                if (executor == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такого исполнителя";
+                    return serviceResponse;
+                }
+
+                executor.Approved = true;
+                _context.Entry(executor).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                var data = _mapper.Map<ExecutorDto>(executor);
+                data.UserId = executor.User.Id;
+                serviceResponse.Data = data;
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<ExecutorDto>>> GetExecutorsForApproval()
+        {
+            var serviceResponse = new ServiceResponse<List<ExecutorDto>>();
+            try
+            {
+                var executors = _context.Executors
+                    .Include(i=>i.Contacts)
+                    .Where(i => i.Approved != true);
+
+
+                serviceResponse.Data = executors.Select(i => _mapper.Map<ExecutorDto>(i)).ToList();
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
         }
 
         public async Task<ServiceResponse<bool>> SaveCompService(List<ServiceDto> newServices)

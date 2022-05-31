@@ -14,7 +14,7 @@ namespace ACM_Website.Shared
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; }
         public DateTime DateCreated { get; set; } = DateTime.Now;
-        public string Role { get; set; } = "Заказчик";
+        public string Role { get; set; } 
 
     }
 }

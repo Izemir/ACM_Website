@@ -23,7 +23,7 @@ namespace ACM_API.Controllers
 
         [HttpPost("register")]
         [EnableCors("CorsPolicy")]
-        public async Task<ActionResult<ServiceResponse<long>>> Register(AddUserDto request)
+        public async Task<ActionResult<ServiceResponse<long>>> Register(UserDto request)
         {
             //var response = await _authService.Register(
             //    new User
@@ -44,7 +44,7 @@ namespace ACM_API.Controllers
 
         [HttpPost("login")]
         [EnableCors("CorsPolicy")]
-        public async Task<ActionResult<ServiceResponse<GetUserDto>>> Login(GetUserDto user)
+        public async Task<ActionResult<ServiceResponse<UserDto>>> Login(UserDto user)
         {
             var response = await _authService.Login(user.Username, user.Password);
             if (!response.Success)

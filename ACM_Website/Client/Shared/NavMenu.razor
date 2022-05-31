@@ -20,13 +20,19 @@
         </li>
         <AuthorizeView>
             <Authorized>
-                @if(admin){
-                <li class="dropdown-divider"></li>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="compservice">
-                        <span class="oi oi-briefcase" aria-hidden="true"></span> Связывание услуг и навыков
-                    </NavLink>
-                </li>
+                @if (Role == "Admin")
+                {
+                    <li class="dropdown-divider"></li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="compservice">
+                            <span class="oi oi-briefcase" aria-hidden="true"></span> Связывание услуг и навыков
+                        </NavLink>
+                    </li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="moderateexes">
+                            <span class="oi oi-briefcase" aria-hidden="true"></span> Список исполнителей
+                        </NavLink>
+                    </li>
                 }
             </Authorized>
         </AuthorizeView>
@@ -51,22 +57,28 @@
             </AuthorizeView>*@
         <AuthorizeView>
             <Authorized>
-                <li class="dropdown-divider"></li>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="customer">
+                @if (Role == "Admin" || Role == "Customer")
+                {
+                    <li class="dropdown-divider"></li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="customer">
                         <span class="oi oi-code" aria-hidden="true"></span> Заказчик
                     </NavLink>
                 </li>
+                }
             </Authorized>
         </AuthorizeView>
         <AuthorizeView>
             <Authorized>
-                <li class="dropdown-divider"></li>
-                <li class="nav-item px-3">
+                @if (Role == "Admin" || Role == "Executor")
+                {
+                    <li class="dropdown-divider"></li>
+                    <li class="nav-item px-3">
                     <NavLink class="nav-link" href="executor">
                         <span class="oi oi-code" aria-hidden="true"></span> Исполнитель
                     </NavLink>
                 </li>
+                }
             </Authorized>
         </AuthorizeView>
         <li class="dropdown-divider"></li>
@@ -101,20 +113,26 @@
 
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    bool admin = false;
+    string Role { get;set; }
 
     protected override async Task OnInitializedAsync()
     {
-        long? userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
-        if (userId != null)
+        Role = await LocalStorage.GetItemAsync<string>("role");
+        if (Role == "-")
         {
-            var request = await AuthService.IsAdmin(userId.Value);
-            if (request.Success)
+            var id = await LocalStorage.GetItemAsStringAsync("id");
+            long userId = id==null ? 0 : long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+            if (userId != 0)
             {
-                admin = request.Data;
+                var request = await AuthService.IsAdmin(userId);
+                if (request.Success)
+                {
+                    if (request.Data) Role = "Admin";
 
-            } 
+                }
+            }
         }
+
     }
 
     private void ToggleNavMenu()
@@ -125,6 +143,8 @@
     private async void Logout()
     {
         await LocalStorage.RemoveItemAsync("username");
+        await LocalStorage.RemoveItemAsync("id");
+        await LocalStorage.RemoveItemAsync("role");
         await AuthStateProvider.GetAuthenticationStateAsync();
         NavigationManager.NavigateTo("/");
     }

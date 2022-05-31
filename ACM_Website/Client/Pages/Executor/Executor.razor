@@ -3,6 +3,8 @@
 @inject IExecutorService ExecutorService
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
+@inject IAuthService AuthService
+@inject IModeratorService ModeratorService
 
 @if (executor == null)
 {
@@ -16,7 +18,7 @@ else
     <h3>Исполнитель</h3>
     <div class="name">
         <h5>Имя</h5>
-        <span>@executor.Name</span><br />
+        <span>@(executor.Name+(executor.Approved ? " [Одобрен]":""))</span><br />
     </div>
     <div class="inn">
         <h5>ИНН</h5>
@@ -43,8 +45,21 @@ else
         </RowTemplate>
     </MudTable>
 
+    @if (IsAdmin)
+    {
+        <MudButton OnClick="@(() => ApproveExecutor())"
+                   StartIcon="@Icons.Material.Filled.Approval"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="executor.Approved">Одобрить</MudButton>
+    }
+
     @if (IsMine)
     {
+        <MudButton class="btn-dark" @onclick="@(()=>Change(executor.Id))">
+            <i class="oi oi-action-redo"></i>&nbsp;&nbsp;&nbsp;Изменить
+        </MudButton>
+
         <MudButton class="btn-dark" @onclick="@(()=>ShowChats(executor.Id))">
             <i class="oi oi-chat"></i>&nbsp;&nbsp;&nbsp;Чаты исполнителя
         </MudButton>
@@ -71,12 +86,20 @@ else
 
     public long userId { get; set; }
 
+    public bool IsAdmin { get; set; } = false;
+
     string message = string.Empty;
     string messageCssClass = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        var admin = await AuthService.IsAdmin(userId);
+        if (admin.Success)
+        {
+            IsAdmin = admin.Data;
+        }
+
         if (ExecutorId == null)
         {
 
@@ -137,9 +160,30 @@ else
         }
     }
 
+    void Change(long executorId)
+    {
+        NavigationManager.NavigateTo($"createexecutor/{executorId}");
+    }
+
     void ShowChats(long executorId)
     {
         NavigationManager.NavigateTo($"executorchats/{executorId}");
+    }
+
+    async Task ApproveExecutor()
+    {
+        var userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        var request = await ModeratorService.ApproveExecutor(userId, executor.Id);
+
+        if (request.Success)
+        {
+            executor = request.Data;
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
     }
 
 }

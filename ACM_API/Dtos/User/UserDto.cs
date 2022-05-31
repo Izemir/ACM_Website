@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 namespace ACM_API.Dtos.User
 {
-    public class AddUserDto
+    public class UserDto
     {
+        public long Id { get; set; }
 
         public string Username { get; set; }
 
@@ -15,5 +16,7 @@ namespace ACM_API.Dtos.User
         public string Password { get; set; }
 
         public DateTime DateCreated { get; set; } = DateTime.Now;
+
+        public string Role { get; set; } 
     }
 }

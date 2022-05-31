@@ -91,5 +91,11 @@ namespace ACM_Website.Client.Services.CustomerService
             var result = await _http.DeleteAsync($"{apiConnection}/Customer/DeleteConstruction/{customerId}/{constructionId}");
             return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Construction>>>();
         }
+
+        public async Task<ServiceResponse<WebCustomer>> UpdateCustomer(WebCustomer customer)
+        {
+            var result = await _http.PutAsJsonAsync($"{apiConnection}/Customer/Update", customer);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<WebCustomer>>();
+        }
     }
 }

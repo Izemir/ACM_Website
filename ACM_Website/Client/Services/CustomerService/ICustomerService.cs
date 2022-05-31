@@ -19,5 +19,7 @@ namespace ACM_Website.Client.Services.CustomerService
         Task<ServiceResponse<List<Construction>>> UpdateConstruction(long customerId, Construction construction);
 
         Task<ServiceResponse<List<Construction>>> DeleteConstruction(long customerId, long constructionId);
+
+        Task<ServiceResponse<WebCustomer>> UpdateCustomer(WebCustomer customer);
     }
 }

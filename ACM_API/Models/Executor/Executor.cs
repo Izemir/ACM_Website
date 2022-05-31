@@ -29,5 +29,7 @@ namespace ACM_API.Models.Executor
 
         public List<Chat.Chat> Chats { get; set; }
 
+        public bool Approved { get; set; }
+
     }
 }

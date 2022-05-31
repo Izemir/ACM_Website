@@ -53,7 +53,7 @@ namespace ACM_API.Controllers
             return Ok(result);
         }
 
-        [HttpPut]
+        [HttpPut("Update")]
         [EnableCors("CorsPolicy")]
         public async Task<ActionResult<ServiceResponse<ExecutorDto>>> UpdateExecutor(ExecutorDto request)
         {

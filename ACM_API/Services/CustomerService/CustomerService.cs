@@ -157,11 +157,24 @@ namespace ACM_API.Services.CustomerService
             var serviceResponse = new ServiceResponse<CustomerDto>();
             try
             {
-                var dBCustomer = await _context.Customers.FindAsync(updatedCustomer.Id);
+                var customer = await _context.Customers
+                    .Include(i => i.ContactPersons)
+                    .ThenInclude(j => j.Contacts)
+                    .Include(i => i.CustomerType)
+                    .FirstAsync(i => i.Id == updatedCustomer.Id);
 
-                dBCustomer.ActualAddress = updatedCustomer.ActualAddress;
-                dBCustomer.Address = updatedCustomer.Address;
+                customer.CustomerType = _context.CustomerTypes.First(i => i.Id == updatedCustomer.CustomerType.Id);
 
+                customer.Name=updatedCustomer.Name;
+                customer.FullName=updatedCustomer.FullName;
+                customer.Address=updatedCustomer.Address;
+                customer.ActualAddress=updatedCustomer.ActualAddress;
+                customer.OGRN=updatedCustomer.OGRN;
+                customer.INN=updatedCustomer.INN;
+                customer.KPP=updatedCustomer.KPP;
+                customer.ContactPersons = updatedCustomer.ContactPersons;
+
+                _context.Entry(customer).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
                 serviceResponse.Data = _mapper.Map<CustomerDto>(await _context.Customers.FindAsync(updatedCustomer.Id));

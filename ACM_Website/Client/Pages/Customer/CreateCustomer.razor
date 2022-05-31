@@ -1,65 +1,80 @@
 ﻿@page "/createcustomer"
+@page "/createcustomer/{customerId:long}"
 @inject ICustomerService CustomerService
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
 
 <h3>Создание Заказчика</h3>
 
-<EditForm Model="customer" OnValidSubmit="HandleCreation">
-    <DataAnnotationsValidator />
-    <div class="mb-3">
-        <label for="name">ФИО</label>
-        <InputText id="name" @bind-Value="customer.Name" class="form-control" />
-        <ValidationMessage For="@(() => customer.Name)" />
-    </div>
-    <div class="mb-3">
-        <label for="address">Адрес</label>
-        <InputText id="address" @bind-Value="customer.Address" class="form-control" />
-        <ValidationMessage For="@(() => customer.Address)" />
-    </div>
-    <div class="mb-3">
-        <label for="ogrn">ОГРН</label>
-        <InputText id="ogrn" @bind-Value="customer.OGRN" class="form-control" />
-        <ValidationMessage For="@(() => customer.OGRN)" />
-    </div>
-    <div class="mb-3">
-        <label for="inn">ИНН</label>
-        <InputText id="inn" @bind-Value="customer.INN" class="form-control" />
-        <ValidationMessage For="@(() => customer.INN)" />
-    </div>
-    <div class="mb-3">
-        <label for="kpp">КПП</label>
-        <InputText id="kpp" @bind-Value="customer.KPP" class="form-control" />
-        <ValidationMessage For="@(() => customer.KPP)" />
-    </div>
-    <div class="dropdown-divider"></div>
-    <div class="mb-3">
-        <label for="contactName">Имя контактного лица</label>
-        <InputText id="contactName" @bind-Value="customer.ContactPersons[0].Name" class="form-control" />
-        <ValidationMessage For="@(() => customer.ContactPersons[0].Name)" />
-    </div>
-    <div class="mb-3">
-        <label for="contact">Контакт</label>
-        <InputText id="contact" @bind-Value="customer.ContactPersons[0].Contacts[0].Address" class="form-control" />
-        <ValidationMessage For="@(() => customer.ContactPersons[0].Contacts[0].Address)" />
-    </div>
-    <div class="form-group">
-        <label for="customerType">Тип заказчика</label>
-        <InputSelect id="customerType" @bind-Value="customer.CustomerType.Id" class="form-control">
-            @foreach (var type in Types)
-            {
-                <option value="@type.Id">@type.TypeName</option>
-            }
-        </InputSelect>
-    </div>
-    <button type="submit" class="btn btn-primary">Создать</button>
+@if (CustomerId != null && customer == null)
+{
+    <span>Загрузка...</span>
     <div class="@messageCssClass">
         <span>@message</span>
     </div>
-</EditForm>
+}
+else
+{
+
+    <EditForm Model="customer" OnValidSubmit="HandleCreation">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label for="name">ФИО</label>
+            <InputText id="name" @bind-Value="customer.Name" class="form-control" />
+            <ValidationMessage For="@(() => customer.Name)" />
+        </div>
+        <div class="mb-3">
+            <label for="address">Адрес</label>
+            <InputText id="address" @bind-Value="customer.Address" class="form-control" />
+            <ValidationMessage For="@(() => customer.Address)" />
+        </div>
+        <div class="mb-3">
+            <label for="ogrn">ОГРН</label>
+            <InputText id="ogrn" @bind-Value="customer.OGRN" class="form-control" />
+            <ValidationMessage For="@(() => customer.OGRN)" />
+        </div>
+        <div class="mb-3">
+            <label for="inn">ИНН</label>
+            <InputText id="inn" @bind-Value="customer.INN" class="form-control" />
+            <ValidationMessage For="@(() => customer.INN)" />
+        </div>
+        <div class="mb-3">
+            <label for="kpp">КПП</label>
+            <InputText id="kpp" @bind-Value="customer.KPP" class="form-control" />
+            <ValidationMessage For="@(() => customer.KPP)" />
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="mb-3">
+            <label for="contactName">Имя контактного лица</label>
+            <InputText id="contactName" @bind-Value="customer.ContactPersons[0].Name" class="form-control" />
+            <ValidationMessage For="@(() => customer.ContactPersons[0].Name)" />
+        </div>
+        <div class="mb-3">
+            <label for="contact">Контакт</label>
+            <InputText id="contact" @bind-Value="customer.ContactPersons[0].Contacts[0].Address" class="form-control" />
+            <ValidationMessage For="@(() => customer.ContactPersons[0].Contacts[0].Address)" />
+        </div>
+        <div class="form-group">
+            <label for="customerType">Тип заказчика</label>
+            <InputSelect id="customerType" @bind-Value="customer.CustomerType.Id" class="form-control">
+                @foreach (var type in Types)
+                {
+                    <option value="@type.Id">@type.TypeName</option>
+                }
+            </InputSelect>
+        </div>
+        <button type="submit" class="btn btn-primary">Создать</button>
+        <div class="@messageCssClass">
+            <span>@message</span>
+        </div>
+    </EditForm>
+}
 
 @code {
-    private WebCustomer customer = new WebCustomer();
+    [Parameter]
+    public long? CustomerId { get; set; }
+
+    private WebCustomer customer { get; set; }
 
 
     string message = string.Empty;
@@ -68,17 +83,56 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Types = new List<CustomerType>(){
+        if (CustomerId != null)
+        {
+            var userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+            var request = await CustomerService.ExistCustomer(userId);
+            if (request.Success)
+            {
+                if (request.Data == CustomerId)
+                {
+                    var oldCustomer = await CustomerService.GetCustomer(CustomerId.Value);
+                    if (oldCustomer.Success)
+                    {
+                        customer = oldCustomer.Data;
+
+                    }
+                    else
+                    {
+                        message = request.Message;
+                        messageCssClass = "text-danger";
+                    }
+                }
+                else
+                {
+                    message = "Нет прав на изменение";
+                    messageCssClass = "text-danger";
+                }
+
+            }
+            else
+            {
+                message = request.Message;
+                messageCssClass = "text-danger";
+            }
+
+        }
+        else
+        {
+            customer = new WebCustomer();
+            Types = new List<CustomerType>(){
             new CustomerType(){ Id=0, TypeName=""}
-        };
-        customer.CustomerType = Types[0];
-        customer.ContactPersons = new List<ContactPerson>()
-    {
+            };
+
+            customer.CustomerType = Types[0];
+            customer.ContactPersons = new List<ContactPerson>()
+{
             new ContactPerson()
             {
                 Name="", Contacts=new List<Contact>(){new Contact() { Address=""} }
             }
-        };
+            };
+        }
 
         var res = await CustomerService.GetCustomerTypes();
         if (res.Success)
@@ -91,18 +145,40 @@
 
     async Task HandleCreation()
     {
-        var id = await LocalStorage.GetItemAsStringAsync("id");
-        var result = await CustomerService.AddCustomer(customer, long.Parse(id));
-
-        message = result.Message;
-        if (result.Success)
+        if (CustomerId != null)
         {
-            Console.WriteLine(result.Data.Id);
-            messageCssClass = "text-success";
-            NavigationManager.NavigateTo("customer");
+            var result = await CustomerService.UpdateCustomer(customer);
+
+            message = result.Message;
+            if (result.Success)
+            {
+                NavigationManager.NavigateTo("customer");
+            }
+            else
+            {
+                message = result.Message;
+                messageCssClass = "text-danger";
+            }
+
         }
         else
-            messageCssClass = "text-danger";
+        {
+            var id = await LocalStorage.GetItemAsStringAsync("id");
+            var result = await CustomerService.AddCustomer(customer, long.Parse(id));
+
+            message = result.Message;
+            if (result.Success)
+            {
+                NavigationManager.NavigateTo("customer");
+            }
+            else
+            {
+                message = result.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+
+
     }
 
 }

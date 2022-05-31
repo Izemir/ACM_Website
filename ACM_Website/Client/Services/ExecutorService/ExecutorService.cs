@@ -29,7 +29,6 @@ namespace ACM_Website.Client.Services.ExecutorService
             var result = await _http.PostAsJsonAsync($"{apiConnection}/Executor/AddExecutor/{userId}", executor);
             return await result.Content.ReadFromJsonAsync<ServiceResponse<WebExecutor>>();
         }
-
         public async Task<ServiceResponse<bool>> DeleteExecutor(long userId)
         {
             var result = await _http.DeleteAsync($"{apiConnection}/Executor/DeleteExecutor/{userId}");
@@ -58,6 +57,12 @@ namespace ACM_Website.Client.Services.ExecutorService
         {
             var result = await _http.GetAsync($"{apiConnection}/Executor/GetSpecialityList");
             return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Speciality>>>();
+        }
+
+        public async Task<ServiceResponse<WebExecutor>> UpdateExecutor(WebExecutor executor)
+        {
+            var result = await _http.PutAsJsonAsync($"{apiConnection}/Executor/Update", executor);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<WebExecutor>>();
         }
     }
 }
