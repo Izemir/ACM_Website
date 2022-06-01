@@ -25,10 +25,46 @@ namespace ACM_Website.Client.Services.ModeratorService
 #endif
             }
 
+        public async Task<ServiceResponse<List<Competency>>> AddCompetency(Competency competency)
+        {
+            var result = await _http.PostAsJsonAsync($"{apiConnection}/Moderator/AddCompetency", competency);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Competency>>>();
+        }
+
+        public async Task<ServiceResponse<List<Service>>> AddService(Service service)
+        {
+            var result = await _http.PostAsJsonAsync($"{apiConnection}/Moderator/AddService", service);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Service>>>();
+        }
+
+        public async Task<ServiceResponse<List<Speciality>>> AddSpeciality(Speciality speciality)
+        {
+            var result = await _http.PostAsJsonAsync($"{apiConnection}/Moderator/AddSpeciality", speciality);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Speciality>>>();
+        }
+
         public async Task<ServiceResponse<WebExecutor>> ApproveExecutor(long userId, long executorId)
         {
             var result = await _http.PutAsJsonAsync($"{apiConnection}/Moderator/ApproveExe/{userId}/{executorId}",0);
             return await result.Content.ReadFromJsonAsync<ServiceResponse<WebExecutor>>();
+        }
+
+        public async Task<ServiceResponse<List<Competency>>> DeleteCompetency(long competencyId)
+        {
+            var result = await _http.DeleteAsync($"{apiConnection}/Moderator/DeleteCompetency/{competencyId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Competency>>>();
+        }
+
+        public async Task<ServiceResponse<List<Service>>> DeleteService(long serviceId)
+        {
+            var result = await _http.DeleteAsync($"{apiConnection}/Moderator/DeleteService/{serviceId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Service>>>();
+        }
+
+        public async Task<ServiceResponse<List<Speciality>>> DeleteSpeciality(long specialityId)
+        {
+            var result = await _http.DeleteAsync($"{apiConnection}/Moderator/DeleteSpeciality/{specialityId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Speciality>>>();
         }
 
         public async Task<ServiceResponse<List<WebExecutor>>> GetExecutorsForApproval()

@@ -26,6 +26,6 @@ namespace ACM_Website.Shared
 
         public long UserId { get; set; }
 
-        public bool Approved { get; set; }
+        public bool Approved { get; set; } = false;
     }
 }

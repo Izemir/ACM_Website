@@ -22,7 +22,7 @@ namespace ACM_API.Services.SearchService
             _context = context;
             _mapper = mapper;
         }
-        public async Task<ServiceResponse<List<ExecutorDto>>> GetConstructionExes(long constructionId)
+        public async Task<ServiceResponse<List<ExecutorDto>>> GetExesForConstructions(long constructionId)
         {
             var serviceResponse = new ServiceResponse<List<ExecutorDto>>();
             try

@@ -59,5 +59,83 @@ namespace ACM_API.Controllers
 
             return Ok(response);
         }
+
+        [HttpPost("AddSpeciality")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<SpecialityDto>>> AddSpeciality(SpecialityDto speciality)
+        {
+            var response = await _moderatorService.AddSpeciality(speciality);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPost("AddCompetency")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<CompetencyDto>>> AddCompetency(CompetencyDto competency)
+        {
+            var response = await _moderatorService.AddCompetency(competency);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPost("AddService")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<ServiceDto>>> AddService(ServiceDto service)
+        {
+            var response = await _moderatorService.AddService(service);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpDelete("DeleteSpeciality/{specialityId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<SpecialityDto>>> DeleteSpeciality(long specialityId)
+        {
+            var response = await _moderatorService.DeleteSpeciality(specialityId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpDelete("DeleteCompetency/{competencyId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<CompetencyDto>>> DeleteCompetency(long competencyId)
+        {
+            var response = await _moderatorService.DeleteCompetency(competencyId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpDelete("DeleteService/{serviceId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<ServiceDto>>> DeleteService(long serviceId)
+        {
+            var response = await _moderatorService.DeleteService(serviceId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
     }
 }

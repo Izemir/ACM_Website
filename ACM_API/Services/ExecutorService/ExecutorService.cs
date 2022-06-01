@@ -31,6 +31,7 @@ namespace ACM_API.Services.ExecutorService
                 var executor = _mapper.Map<Executor>(newExecutor);
                 executor.Competency = _context.Competencies.Where(i => newExecutor.Competency.Contains(i)).ToList();
                 executor.Speciality = _context.Specialities.Where(i => newExecutor.Speciality.Contains(i)).ToList();
+                executor.Approved = false;
                 _context.Executors.Add(executor);
                 var user = await _context.Users.FirstAsync(i => i.Id == userId);
                 user.Executor = executor;

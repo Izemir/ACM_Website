@@ -16,12 +16,12 @@
 else
 {
     <MudPaper Class="pa-16 ma-2" Elevation="3">
-        <MudTextField @bind-Value="Service.ServiceName" Label="Услуга" Variant="Variant.Outlined"></MudTextField>
+        @*<MudTextField @bind-Value="Service.ServiceName" Label="Услуга" Variant="Variant.Outlined"></MudTextField>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(()=>AddServiceToList(Service))">Добавить услугу в список</MudButton>
         <MudDivider />
         <MudTextField @bind-Value="Competency.CompetencyName" Label="Навык" Variant="Variant.Outlined"></MudTextField>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(()=>AddCompetencyToList(Competency))">Добавить навык в список</MudButton>
-        <MudDivider />
+        <MudDivider />*@
         <MudGrid>
             <MudItem xs="6">
                 <MudField Label="Выбранная услуга" @bind-Value="ChosenService.ServiceName">@ChosenService.ServiceName</MudField>

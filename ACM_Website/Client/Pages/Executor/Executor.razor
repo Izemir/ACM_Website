@@ -5,6 +5,8 @@
 @inject NavigationManager NavigationManager
 @inject IAuthService AuthService
 @inject IModeratorService ModeratorService
+@inject ICustomerService CustomerService
+@inject IChatService ChatService
 
 @if (executor == null)
 {
@@ -68,6 +70,15 @@ else
             <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить
         </MudButton>
     }
+    else
+    {
+        <MudButton OnClick="@(() => StartChat(executor.Id))"
+                   StartIcon="@Icons.Material.Filled.Send"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">Написать</MudButton>
+    }
+
+
 
     <div class="@messageCssClass">
         <span>@message</span>
@@ -182,6 +193,41 @@ else
         else
         {
             message = request.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    async Task StartChat(long id)
+    {
+        var userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        var customer = await CustomerService.ExistCustomer(userId);
+        if (customer.Success && customer.Data != 0)
+        {
+            long chatId = 0;
+            var existChat = await ChatService.ExistChat(customer.Data, id);
+            if (existChat.Success && existChat.Data != 0)
+            {
+                chatId = existChat.Data;
+                NavigationManager.NavigateTo($"/chat/{chatId}");
+            }
+            else
+            {
+                var newChat = await ChatService.StartNewChat(customer.Data, id);
+                if (newChat.Success)
+                {
+                    chatId = newChat.Data.Id;
+                    NavigationManager.NavigateTo($"/chat/{chatId}");
+                }
+                else
+                {
+                    message = newChat.Message;
+                    messageCssClass = "text-danger";
+                }
+            }
+        }
+        else
+        {
+            message = "Нет такого заказчика";
             messageCssClass = "text-danger";
         }
     }

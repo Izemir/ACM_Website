@@ -9,6 +9,8 @@ namespace ACM_API.Services.SearchService
 {
     public interface ISearchService
     {
-        Task<ServiceResponse<List<ExecutorDto>>> GetConstructionExes(long constructionId);
+        Task<ServiceResponse<List<ExecutorDto>>> GetExesForConstructions(long constructionId);
+
+        Task<ServiceResponse<List<ExecutorDto>>> GetConstructionForExes(long constructionId);
     }
 }

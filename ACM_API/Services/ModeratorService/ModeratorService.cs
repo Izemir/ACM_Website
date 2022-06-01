@@ -26,6 +26,171 @@ namespace ACM_API.Services.ModeratorService
             _mapper = mapper;
         }
 
+        public async Task<ServiceResponse<List<SpecialityDto>>> AddSpeciality(SpecialityDto speciality)
+        {
+            var serviceResponse = new ServiceResponse<List<SpecialityDto>>();
+            try
+            {
+                if (speciality.Id == 0) _context.Specialities.Add(_mapper.Map<Speciality>(speciality));
+                await _context.SaveChangesAsync();
+
+                var dBData = await _context.Specialities.ToListAsync();
+                serviceResponse.Data = dBData.Select(i => _mapper.Map<SpecialityDto>(i)).ToList();
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<SpecialityDto>>> DeleteSpeciality(long specialityId)
+        {
+            var serviceResponse = new ServiceResponse<List<SpecialityDto>>();
+            try
+            {
+                var spec = await _context.Specialities
+                    .FirstOrDefaultAsync(i => i.Id == specialityId);
+                if (spec == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такой специальности";
+                    return serviceResponse;
+                }
+
+                _context.Entry(spec).State = EntityState.Deleted;
+                await _context.SaveChangesAsync();
+
+                var dBData = await _context.Specialities.ToListAsync();
+                serviceResponse.Data = dBData.Select(i => _mapper.Map<SpecialityDto>(i)).ToList();
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<CompetencyDto>>> AddCompetency(CompetencyDto competency)
+        {
+            var serviceResponse = new ServiceResponse<List<CompetencyDto>>();
+            try
+            {
+                if (competency.Id == 0) _context.Competencies.Add(_mapper.Map<Competency>(competency));
+                await _context.SaveChangesAsync();
+
+                var dBData = await _context.Competencies.ToListAsync();
+                serviceResponse.Data = dBData.Select(i => _mapper.Map<CompetencyDto>(i)).ToList();
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<CompetencyDto>>> DeleteCompetency(long сompetencyId)
+        {
+            var serviceResponse = new ServiceResponse<List<CompetencyDto>>();
+            try
+            {
+                var comp = await _context.Competencies
+                    .Include(i=>i.Service)
+                    .FirstOrDefaultAsync(i => i.Id == сompetencyId);
+                if (comp == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такого навыка";
+                    return serviceResponse;
+                }
+                if (comp.Service!=null) 
+                {
+                    if (comp.Service.Count > 0)
+                    {
+                        serviceResponse.Success = false;
+                        serviceResponse.Message = "Есть привязки к услугам, удаление невозможно";
+                        return serviceResponse;
+                    }
+                }
+
+                _context.Entry(comp).State = EntityState.Deleted;
+                await _context.SaveChangesAsync();
+
+                var dBData = await _context.Competencies.ToListAsync();
+                serviceResponse.Data = dBData.Select(i => _mapper.Map<CompetencyDto>(i)).ToList();
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<ServiceDto>>> AddService(ServiceDto service)
+        {
+            var serviceResponse = new ServiceResponse<List<ServiceDto>>();
+            try
+            {
+                if (service.Id == 0) _context.Services.Add(_mapper.Map<Service>(service));
+                await _context.SaveChangesAsync();
+
+                var dBData = await _context.Services.ToListAsync();
+                serviceResponse.Data = dBData.Select(i => _mapper.Map<ServiceDto>(i)).ToList();
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<ServiceDto>>> DeleteService(long serviceId)
+        {
+            var serviceResponse = new ServiceResponse<List<ServiceDto>>();
+            try
+            {
+                var service = await _context.Services
+                    .Include(i => i.Competency)
+                    .FirstOrDefaultAsync(i => i.Id == serviceId);
+                if (service == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такой услуги";
+                    return serviceResponse;
+                }
+                if (service.Competency!=null)
+                {
+                    if (service.Competency.Count() > 0)
+                    {
+                        serviceResponse.Success = false;
+                        serviceResponse.Message = "Есть привязки к навыкам, удаление невозможно";
+                        return serviceResponse;
+                    }
+                }
+
+                _context.Entry(service).State = EntityState.Deleted;
+                await _context.SaveChangesAsync();
+
+                var dBData = await _context.Services.ToListAsync();
+                serviceResponse.Data = dBData.Select(i => _mapper.Map<ServiceDto>(i)).ToList();
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
         public async Task<ServiceResponse<ExecutorDto>> ApproveExecutor(long userId, long executorId)
         {
             var serviceResponse = new ServiceResponse<ExecutorDto>();
@@ -126,35 +291,6 @@ namespace ACM_API.Services.ModeratorService
                         if (c.Id==0) service.Competency.Add(new Competency() { CompetencyName=c.CompetencyName});
                     }
 
-                    //_context.Entry(service).State = EntityState.Modified;
-
-
-
-                    //var service = _mapper.Map<Service>(s);
-                    //service.Competency = s.Competencies.Select(i => _mapper.Map<Competency>(i)).ToList();
-                    //List<Competency> competencies = new List<Competency>();
-                    //foreach(var c in service.Competency)
-                    //{
-                    //    var oldComp = _context.Competencies.First(i => i.Id == c.Id);
-                    //    if (oldComp != null)
-                    //    {
-                    //        competencies.Add(oldComp);
-                    //        //_context.Entry(oldComp).State = EntityState.Modified;
-                    //    }
-                    //    else competencies.Add(c);                        
-                    //}
-                    //service.Competency = competencies;
-
-                    //var oldService = _context.Services.First(i => i.Id == service.Id);
-                    //if (oldService == null)
-                    //{
-                    //    _context.Services.Add(service);
-                    //}
-                    //else
-                    //{
-                    //    oldService.Competency = service.Competency;
-                    //    _context.Entry(oldService).State = EntityState.Modified;
-                    //}
 
                     await _context.SaveChangesAsync();
                 }               

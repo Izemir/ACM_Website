@@ -1,0 +1,282 @@
+﻿@page "/addscrolls"
+@inject IAuthService AuthService
+@inject IExecutorService ExecutorService
+@inject ICustomerService CustomerService
+@inject IModeratorService ModeratorService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+@if (Services == null && Competencies == null && Specialities == null)
+{
+    <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+else
+{
+    <MudPaper Class="pa-16 ma-2" Elevation="3">
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+            <MudTabPanel Text="Услуги">
+                <MudTextField @bind-Value="Service.ServiceName" Label="Услуга" Variant="Variant.Outlined"></MudTextField>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(()=>AddService(Service))">Добавить услугу в БД</MudButton>
+                <MudSelect T="Service" Placeholder="список услуг..." Label="Услуги" @bind-Value="ChosenService" ToStringFunc="@ToString">
+                    @foreach (var service in Services)
+                    {
+                        <MudSelectItem Value="service">@service.ServiceName</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="(()=>DeleteService(ChosenService))">Удалить услугу из БД</MudButton>
+
+            </MudTabPanel>
+            <MudTabPanel Text="Навыки">
+                <MudTextField @bind-Value="Competency.CompetencyName" Label="Навык" Variant="Variant.Outlined"></MudTextField>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(()=>AddCompetency(Competency))">Добавить навык в БД</MudButton>
+                <MudSelect T="Competency" Placeholder="список навыков..." Label="Навыки" @bind-Value="ChosenCompetency" ToStringFunc="@ToString">
+                    @foreach (var competency in Competencies)
+                    {
+                        <MudSelectItem Value="competency">@competency.CompetencyName</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="(()=>DeleteCompetency(ChosenCompetency))">Удалить навык из БД</MudButton>
+            </MudTabPanel>
+            <MudTabPanel Text="Специальности">
+                <MudTextField @bind-Value="Speciality.SpecialityName" Label="Специальность" Variant="Variant.Outlined"></MudTextField>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(()=>AddSpeсiality(Speciality))">Добавить специальность в БД</MudButton>
+                <MudSelect T="Speciality" Placeholder="список специальностей..." Label="Специальности" @bind-Value="ChosenSpeciality" ToStringFunc="@ToString">
+                    @foreach (var speciality in Specialities)
+                    {
+                        <MudSelectItem Value="speciality">@speciality.SpecialityName</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="(()=>DeleteSpeciality(ChosenSpeciality))">Удалить специальность из БД</MudButton>
+            </MudTabPanel>
+        </MudTabs>
+
+    </MudPaper>
+
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+
+@code {
+
+    public Competency Competency { get; set; }
+
+    public Service Service { get; set; }
+
+    public Speciality Speciality { get; set; }
+
+    public Service ChosenService { get; set; }
+
+    public Competency ChosenCompetency { get; set; }
+
+    public Speciality ChosenSpeciality { get; set; }
+
+    public List<Service> Services { get; set; }
+
+    public List<Competency> Competencies { get; set; }
+
+    public List<Speciality> Specialities { get; set; }
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    private string ToString(Service s)
+       => s is null ? string.Empty : $"{s.ServiceName}";
+
+    private string ToString(Competency c)
+       => c is null ? string.Empty : $"{c.CompetencyName}";
+
+    private string ToString(Speciality s)
+       => s is null ? string.Empty : $"{s.SpecialityName}";
+
+    // услуги
+
+    async Task AddService(Service service)
+    {
+        if ((Services.Where(i => i.ServiceName == service.ServiceName).Count() == 0) && !string.IsNullOrEmpty(service.ServiceName))
+        {
+            var result = await ModeratorService.AddService(service);
+            if (result.Success)
+            {
+                Services = result.Data;
+                Snackbar.Add("Услуга добавлена", Severity.Success);
+            }
+            else
+            {
+                message = result.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+    }
+
+    async Task DeleteService(Service service)
+    {
+        if ((Services.Where(i => i.ServiceName == service.ServiceName).Count() != 0) && !string.IsNullOrEmpty(service.ServiceName))
+        {
+            var result = await ModeratorService.DeleteService(service.Id);
+            if (result.Success)
+            {
+                Services = result.Data;
+                Snackbar.Add("Услуга удалена", Severity.Success);
+            }
+            else
+            {
+                message = result.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+    }
+
+    // навыки
+
+    async Task AddCompetency(Competency competency)
+    {
+        if ((Competencies.Where(i => i.CompetencyName == competency.CompetencyName).Count() == 0) && !string.IsNullOrEmpty(competency.CompetencyName))
+        {
+            var result = await ModeratorService.AddCompetency(competency);
+            if (result.Success)
+            {
+                Competencies = result.Data;
+                Snackbar.Add("Навык добавлен", Severity.Success);
+            }
+            else
+            {
+                message = result.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+    }
+
+    async Task DeleteCompetency(Competency competency)
+    {
+        if ((Competencies.Where(i => i.CompetencyName == competency.CompetencyName).Count() != 0) && !string.IsNullOrEmpty(competency.CompetencyName))
+        {
+            var result = await ModeratorService.DeleteCompetency(competency.Id);
+            if (result.Success)
+            {
+                Competencies = result.Data;
+                Snackbar.Add("Навык удален", Severity.Success);
+            }
+            else
+            {
+                message = result.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+    }
+
+    // специальности
+
+    async Task AddSpeсiality(Speciality speciality)
+    {
+        if ((Specialities.Where(i => i.SpecialityName == speciality.SpecialityName).Count() == 0) && !string.IsNullOrEmpty(speciality.SpecialityName))
+        {
+            var result = await ModeratorService.AddSpeciality(speciality);
+            if (result.Success)
+            {
+                Specialities = result.Data;
+                Snackbar.Add("Специальность добавлена", Severity.Success);
+            }
+            else
+            {
+                message = result.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+    }
+
+    async Task DeleteSpeciality(Speciality speciality)
+    {
+        if ((Specialities.Where(i => i.SpecialityName == speciality.SpecialityName).Count() != 0) && !string.IsNullOrEmpty(speciality.SpecialityName))
+        {
+            var result = await ModeratorService.DeleteSpeciality(speciality.Id);
+            if (result.Success)
+            {
+                Specialities = result.Data;
+                Snackbar.Add("Специальность удалена", Severity.Success);
+            }
+            else
+            {
+                message = result.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Service = new Service();
+        Competency = new Competency();
+        Speciality = new Speciality();
+
+
+        long? userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        if (userId == null)
+        {
+            NavigationManager.NavigateTo("profile");
+        }
+        else
+        {
+            var request = await AuthService.IsAdmin(userId.Value);
+            if (request.Success)
+            {
+                if (request.Data == false) NavigationManager.NavigateTo("profile");
+                else
+                {
+                    await GetData();
+                    ChosenService = new Service() { ServiceName = "" };
+                    ChosenCompetency = new Competency() { CompetencyName = "" };
+                    ChosenSpeciality = new Speciality() { SpecialityName = "" };
+                }
+            }
+            else
+            {
+                message = request.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+    }
+
+    async Task GetData()
+    {
+        var services = await CustomerService.GetServices();
+        if (services.Success)
+        {
+            Services = services.Data;
+        }
+        else
+        {
+            message = services.Message;
+            messageCssClass = "text-danger";
+        }
+
+        var comps = await ExecutorService.GetCompetencyList();
+        if (comps.Success)
+        {
+            Competencies = comps.Data;
+        }
+        else
+        {
+            message = comps.Message;
+            messageCssClass = "text-danger";
+        }
+
+        var specs = await ExecutorService.GetSpecialityList();
+        if (specs.Success)
+        {
+            Specialities = specs.Data;
+        }
+        else
+        {
+            message = specs.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+}

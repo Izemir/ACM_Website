@@ -27,7 +27,7 @@ namespace ACM_Website.Client.Services.SearchService
 
         public async Task<ServiceResponse<List<WebExecutor>>> GetExecutorsForConstruction(long constructionId)
         {
-            var result = await _http.GetAsync($"{apiConnection}/Search/GetConstructionExes/{constructionId}");
+            var result = await _http.GetAsync($"{apiConnection}/Search/GetExesForConstructions/{constructionId}");
             return await result.Content.ReadFromJsonAsync<ServiceResponse<List<WebExecutor>>>();
         }
     }

@@ -25,7 +25,7 @@ namespace ACM_API.Controllers
         [EnableCors("CorsPolicy")]
         public async Task<ActionResult<List<ExecutorDto>>> GetConstructionExes(long constructionId)
         {
-            var result = await _searchService.GetConstructionExes(constructionId);
+            var result = await _searchService.GetExesForConstructions(constructionId);
             if (result.Success == false)
             {
                 return BadRequest(result);
