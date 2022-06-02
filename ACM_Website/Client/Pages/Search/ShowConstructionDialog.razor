@@ -1,0 +1,46 @@
+﻿@inject ISnackbar Snackbar
+@inject ICustomerService CustomerService
+
+
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @Construction.ConstructionName
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="Customer.Name" Label="Имя заказчика" ReadOnly="true" Variant="Variant.Text" />
+        <MudTextField @bind-Value="Customer.ContactPersons[0].Contacts[0].Address" Label="Контакт" ReadOnly="true" Variant="Variant.Text" />
+        <MudDivider />
+        <MudTextField @bind-Value="Construction.ConstructionName" Label="Название объекта" ReadOnly="true" Variant="Variant.Text" />
+        <MudTextField @bind-Value="Construction.Description" Label="Описание объекта" Lines="5" ReadOnly="true" Variant="Variant.Text" />
+        <MudTable Items="@Construction.Services" Dense="true" Hover="true" Bordered="true" Striped="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Необходимые услуги</MudText>
+                <MudSpacer />                
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Название услуги</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.ServiceName</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Construction Construction { get; set; }
+
+    [Parameter] public WebCustomer Customer { get; set; }
+
+    public string Error { get; set; } = string.Empty;
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+}

@@ -1,4 +1,5 @@
-﻿using ACM_API.Dtos.Executor;
+﻿using ACM_API.Dtos.Customer;
+using ACM_API.Dtos.Executor;
 using ACM_API.Models;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,6 @@ namespace ACM_API.Services.SearchService
     {
         Task<ServiceResponse<List<ExecutorDto>>> GetExesForConstructions(long constructionId);
 
-        Task<ServiceResponse<List<ExecutorDto>>> GetConstructionForExes(long constructionId);
+        Task<ServiceResponse<List<ConstructionDto>>> GetConstructionsForEx(long executorId);
     }
 }

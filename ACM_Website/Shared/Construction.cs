@@ -13,5 +13,6 @@ namespace ACM_Website.Shared
         public string Description { get; set; }
         public List<Service> Services { get; set; } = new List<Service>();
         public bool IsNew { get; set; } = true;
+        public long CustomerId { get; set; }
     }
 }

@@ -38,6 +38,9 @@ namespace ACM_API
             CreateMap<Chat, ChatDto>();
             CreateMap<MessageDto, Message>();
             CreateMap<Message, MessageDto>();
+
+            CreateMap<UserFileDto, UserFile>();
+            CreateMap<UserFile, UserFileDto>();
         }
     }
 }

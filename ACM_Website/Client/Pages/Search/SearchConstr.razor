@@ -1,0 +1,118 @@
+﻿@page "/searchconstr/{executorId:long}"
+@inject ISearchService SearchService
+@inject NavigationManager NavigationManager
+@inject ICustomerService CustomerService
+@inject IChatService ChatService
+@inject ILocalStorageService LocalStorage
+@inject IDialogService DialogService
+
+@if (Constructions == null)
+{
+    <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+else
+{
+    <MudTable Items="@Constructions" Hover="true">
+        <HeaderContent>
+            <MudTh>Имя</MudTh>
+            <MudTh>-</MudTh>
+            <MudTh>-</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.ConstructionName</MudTd>
+            <MudTd>
+                <MudButton OnClick="@(() => ShowConstruction(context))"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.Preview"
+                           Color="Color.Info">Посмотреть объект</MudButton>
+            </MudTd>
+            <MudTd>
+                <MudButton OnClick="@(() => StartChat(context.CustomerId))"
+                           StartIcon="@Icons.Material.Filled.Send"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary">Написать</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+
+@code {
+    List<Construction> Constructions;
+
+    [Parameter]
+    public long? ExecutorId { get; set; }
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ExecutorId == null)
+        {
+            message = "Не задан исполнитель";
+            messageCssClass = "text-danger";
+        }
+        else
+        {
+            var request = await SearchService.GetConstructionsForExecutor(ExecutorId.Value);
+            if (request.Success)
+            {
+                Constructions = request.Data;
+            }
+            else
+            {
+                message = request.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+    }
+
+    async Task ShowConstruction(Construction construction)
+    {
+        var customer = await CustomerService.GetCustomer(construction.CustomerId);
+        if (customer.Success)
+        {
+            var parameters = new DialogParameters { ["Construction"] = construction, ["Customer"] = customer.Data };
+            DialogOptions maxWidth = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+            var dialog = DialogService.Show<ShowConstructionDialog>(construction.ConstructionName, parameters, maxWidth);
+        }
+        else
+        {
+            message = customer.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    async Task StartChat(long id)
+    {
+        long chatId = 0;
+        var existChat = await ChatService.ExistChat(id, ExecutorId.Value);
+        if (existChat.Success && existChat.Data != 0)
+        {
+            chatId = existChat.Data;
+            NavigationManager.NavigateTo($"/chat/{chatId}");
+        }
+        else
+        {
+            var newChat = await ChatService.StartNewChat(id, ExecutorId.Value);
+            if (newChat.Success)
+            {
+                chatId = newChat.Data.Id;
+                NavigationManager.NavigateTo($"/chat/{chatId}");
+            }
+            else
+            {
+                message = newChat.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+    }
+}

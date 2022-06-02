@@ -1,6 +1,8 @@
 ﻿using ACM_API.DB;
+using ACM_API.Dtos.Customer;
 using ACM_API.Dtos.Executor;
 using ACM_API.Models;
+using ACM_API.Models.Customer;
 using ACM_API.Models.Executor;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +24,48 @@ namespace ACM_API.Services.SearchService
             _context = context;
             _mapper = mapper;
         }
+
+        public async Task<ServiceResponse<List<ConstructionDto>>> GetConstructionsForEx(long executorId)
+        {
+            var serviceResponse = new ServiceResponse<List<ConstructionDto>>();
+            try
+            {
+                var executor = await _context.Executors
+                    .Include(i=>i.Competency)
+                    .ThenInclude(c=>c.Service)
+                    .ThenInclude(s=>s.Constructions)
+                    .ThenInclude(co=>co.Services)
+                    .FirstAsync(i => i.Id == executorId);
+
+                List<Construction> constructions = new List<Construction>();
+
+                foreach(var c in executor.Competency){
+                    foreach(var s in c.Service)
+                    {
+                        constructions.AddRange(s.Constructions);
+                    }
+                }
+
+                List<ConstructionDto> constructionDtos = new List<ConstructionDto>();
+
+                foreach (var c in constructions)
+                {
+                    var customer = await _context.Customers.FirstAsync(i => i.Constructions.Contains(c));
+                    var dto = _mapper.Map<ConstructionDto>(c);
+                    dto.CustomerId = customer.Id;
+                    constructionDtos.Add(dto);
+                }
+
+                serviceResponse.Data = constructionDtos;
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
         public async Task<ServiceResponse<List<ExecutorDto>>> GetExesForConstructions(long constructionId)
         {
             var serviceResponse = new ServiceResponse<List<ExecutorDto>>();

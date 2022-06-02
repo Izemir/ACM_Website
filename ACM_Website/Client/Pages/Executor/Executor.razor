@@ -47,28 +47,65 @@ else
         </RowTemplate>
     </MudTable>
 
-    @if (IsAdmin)
-    {
-        <MudButton OnClick="@(() => ApproveExecutor())"
-                   StartIcon="@Icons.Material.Filled.Approval"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   Disabled="executor.Approved">Одобрить</MudButton>
-    }
+
 
     @if (IsMine)
     {
-        <MudButton class="btn-dark" @onclick="@(()=>Change(executor.Id))">
-            <i class="oi oi-action-redo"></i>&nbsp;&nbsp;&nbsp;Изменить
+        <MudButton StartIcon="@Icons.Material.Filled.ChangeHistory"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Class="mr-5"
+                   OnClick="@(()=>Change(executor.Id))">
+            Изменить
         </MudButton>
 
-        <MudButton class="btn-dark" @onclick="@(()=>ShowChats(executor.Id))">
-            <i class="oi oi-chat"></i>&nbsp;&nbsp;&nbsp;Чаты исполнителя
+        <MudButton StartIcon="@Icons.Material.Filled.Chat"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Class="mr-5"
+                   OnClick="@(()=>ShowChats(executor.Id))">
+            Чаты исполнителя
         </MudButton>
 
-        <MudButton class="btn btn-danger" @onclick="@(Delete)">
-            <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить
+        <MudButton StartIcon="@Icons.Material.Filled.Search"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Class="mr-5"
+                   OnClick="@(()=>SearchConstructions(executor.Id))">
+            Поиск объектов
         </MudButton>
+
+        <MudButton StartIcon="@Icons.Material.Filled.Delete"
+                   Variant="Variant.Filled"
+                   Color="Color.Error"
+                   Class="mr-5"
+                   OnClick="@((Delete))">
+            Удалить
+        </MudButton>
+
+        <InputFile id="fileInput" OnChange="UploadFiles" hidden multiple />
+
+        <MudButton HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Class="mr-5"
+                   StartIcon="@Icons.Filled.CloudUpload"
+                   for="fileInput">
+            Прикрепить файлы
+        </MudButton>
+
+        @if (files != null)
+        {
+            <MudText Typo="@Typo.h6">@files.Count() File@(files.Count() == 1 ? "" : "s"):</MudText>
+            <MudList>
+                @foreach (var file in files)
+                {
+                    <MudListItem Icon="@Icons.Filled.AttachFile" @key="@file">
+                        @file.Name <code>@file.Size bytes</code>
+                    </MudListItem>
+                }
+            </MudList>
+        }
     }
     else
     {
@@ -76,6 +113,15 @@ else
                    StartIcon="@Icons.Material.Filled.Send"
                    Variant="Variant.Filled"
                    Color="Color.Primary">Написать</MudButton>
+    }
+
+    @if (IsAdmin)
+    {
+        <MudButton OnClick="@(() => ApproveExecutor())"
+                   StartIcon="@Icons.Material.Filled.Approval"
+                   Variant="Variant.Filled"
+                   Color="Color.Warning"
+                   Disabled="executor.Approved">Одобрить</MudButton>
     }
 
 
@@ -101,6 +147,22 @@ else
 
     string message = string.Empty;
     string messageCssClass = string.Empty;
+
+    IList<IBrowserFile> files = new List<IBrowserFile>();
+    List<UserFile> userFiles = new List<UserFile>();
+    private void UploadFiles(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            var buffer = new byte[file.Size];
+            var format = file.ContentType;
+            var data = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+            userFiles.Add(new UserFile { Data = data });
+            files.Add(file);
+
+        }
+        //TODO upload the files to the server
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -179,6 +241,11 @@ else
     void ShowChats(long executorId)
     {
         NavigationManager.NavigateTo($"executorchats/{executorId}");
+    }
+
+    void SearchConstructions(long executorId)
+    {
+        NavigationManager.NavigateTo($"searchconstr/{executorId}");
     }
 
     async Task ApproveExecutor()

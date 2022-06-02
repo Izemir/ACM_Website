@@ -11,5 +11,6 @@ namespace ACM_API.Dtos.Customer
         public string ConstructionName { get; set; }
         public string Description { get; set; }
         public List<ServiceDto> Services { get; set; }
+        public long CustomerId { get; set; }
     }
 }

@@ -9,5 +9,7 @@ namespace ACM_Website.Client.Services.SearchService
     public interface ISearchService
     {
         Task<ServiceResponse<List<WebExecutor>>> GetExecutorsForConstruction(long constructionId);
+
+        Task<ServiceResponse<List<Construction>>> GetConstructionsForExecutor(long executorId);
     }
 }

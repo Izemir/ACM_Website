@@ -1,4 +1,5 @@
-﻿using ACM_API.Dtos.Executor;
+﻿using ACM_API.Dtos.Customer;
+using ACM_API.Dtos.Executor;
 using ACM_API.Services.SearchService;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -21,11 +22,23 @@ namespace ACM_API.Controllers
             _searchService = searchService;
         }
 
-        [HttpGet("GetConstructionExes/{constructionId}")]
+        [HttpGet("GetExesForConstructions/{constructionId}")]
         [EnableCors("CorsPolicy")]
-        public async Task<ActionResult<List<ExecutorDto>>> GetConstructionExes(long constructionId)
+        public async Task<ActionResult<List<ExecutorDto>>> GetExesForConstructions(long constructionId)
         {
             var result = await _searchService.GetExesForConstructions(constructionId);
+            if (result.Success == false)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("GetConstructionsForEx/{executorId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<ConstructionDto>>> GetConstructionsForEx(long executorId)
+        {
+            var result = await _searchService.GetConstructionsForEx(executorId);
             if (result.Success == false)
             {
                 return BadRequest(result);

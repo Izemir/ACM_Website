@@ -31,5 +31,7 @@ namespace ACM_API.Models.Executor
 
         public bool Approved { get; set; } = false;
 
+        public UserFile File { get; set; }
+
     }
 }
