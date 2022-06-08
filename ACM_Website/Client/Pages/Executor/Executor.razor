@@ -7,6 +7,9 @@
 @inject IModeratorService ModeratorService
 @inject ICustomerService CustomerService
 @inject IChatService ChatService
+@inject IFileService FileService
+@using System.IO;
+@inject IJSRuntime JS
 
 @if (executor == null)
 {
@@ -94,18 +97,7 @@ else
             Прикрепить файлы
         </MudButton>
 
-        @if (files != null)
-        {
-            <MudText Typo="@Typo.h6">@files.Count() File@(files.Count() == 1 ? "" : "s"):</MudText>
-            <MudList>
-                @foreach (var file in files)
-                {
-                    <MudListItem Icon="@Icons.Filled.AttachFile" @key="@file">
-                        @file.Name <code>@file.Size bytes</code>
-                    </MudListItem>
-                }
-            </MudList>
-        }
+
     }
     else
     {
@@ -113,6 +105,39 @@ else
                    StartIcon="@Icons.Material.Filled.Send"
                    Variant="Variant.Filled"
                    Color="Color.Primary">Написать</MudButton>
+    }
+
+    @if (userFiles != null)
+    {
+        <MudText Typo="@Typo.h6">@userFiles.Count() File@(userFiles.Count() == 1 ? "" : "s"):</MudText>
+        <MudList>
+            @foreach (var file in userFiles)
+            {
+                <MudListItem Icon="@Icons.Filled.AttachFile" @key="@file">
+                    @file.FileName
+                    @*<code>@file.Size bytes</code>*@
+                </MudListItem>
+                <MudButton HtmlTag="label"
+                           Variant="Variant.Filled"
+                           Color="Color.Info"
+                           Class="mr-5"
+                           OnClick="(()=>DownloadFile(file.Id))"
+                           StartIcon="@Icons.Filled.CloudDownload">
+                    Скачать файл
+                </MudButton>@if (IsMine)
+                {
+                    <MudButton HtmlTag="label"
+                               Variant="Variant.Filled"
+                               Color="Color.Error"
+                               Class="mr-5"
+                               OnClick="(()=>DeleteFile(file.Id))"
+                               StartIcon="@Icons.Filled.Delete">
+                        Удалить файл
+                    </MudButton>
+                }
+
+            }
+        </MudList>
     }
 
     @if (IsAdmin)
@@ -148,20 +173,76 @@ else
     string message = string.Empty;
     string messageCssClass = string.Empty;
 
-    IList<IBrowserFile> files = new List<IBrowserFile>();
+    //IList<IBrowserFile> files = new List<IBrowserFile>();
     List<UserFile> userFiles = new List<UserFile>();
-    private void UploadFiles(InputFileChangeEventArgs e)
+    private async Task UploadFiles(InputFileChangeEventArgs e)
     {
         foreach (var file in e.GetMultipleFiles())
         {
-            var buffer = new byte[file.Size];
-            var format = file.ContentType;
-            var data = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
-            userFiles.Add(new UserFile { Data = data });
-            files.Add(file);
+            using (var ms = new MemoryStream())
+            {
+                await file.OpenReadStream().CopyToAsync(ms);
 
+                var newFile = new UserFile() { FileName = file.Name, FileContent = ms.ToArray() };
+                var request = await FileService.AddFileToExecutor(executor.Id, newFile);
+                if (request.Success)
+                {
+                    //files.Add(file);
+                    userFiles = request.Data;
+                }
+                else
+                {
+                    message = request.Message;
+                    messageCssClass = "text-danger";
+                }
+            }
         }
-        //TODO upload the files to the server
+    }
+
+    private async Task DownloadFile(long fileId)
+    {
+        var request = await FileService.GetFile(fileId);
+        if (request.Success)
+        {
+            var file = request.Data;
+            var base64String = Convert.ToBase64String(file.FileContent);
+            var fileName = file.FileName;
+
+            await JS.InvokeVoidAsync("downloadFile", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", base64String, fileName);
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    private async Task DeleteFile(long fileId)
+    {
+        var request = await FileService.DeleteFileOfExecutor(executor.Id, fileId);
+        if (request.Success)
+        {
+            userFiles = request.Data;
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    private async Task GetFiles(long executorId)
+    {
+        var request = await FileService.GetExecutorFiles(executorId);
+        if (request.Success)
+        {
+            userFiles = request.Data;
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
     }
 
     protected override async Task OnInitializedAsync()
@@ -210,6 +291,7 @@ else
         {
             executor = executorRequest.Data;
             if (executor.UserId == userId) IsMine = true;
+            await GetFiles(executorId);
         }
         else
         {
