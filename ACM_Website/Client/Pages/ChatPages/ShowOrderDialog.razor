@@ -1,5 +1,8 @@
 ﻿@inject ISnackbar Snackbar
 @inject IOrderService OrderService
+@inject IFileService FileService
+@inject IJSRuntime JS
+@using System.IO;
 
 
 
@@ -11,12 +14,12 @@
     </TitleContent>
     <DialogContent>
         <MudTextField @bind-Value="Order.OrderStatus.Description" Label="Статус заказа" ReadOnly="true" Variant="Variant.Text" />
-        @if (ViewerId==Executor.Id && (Order.OrderStatus.Id==2 || Order.OrderStatus.Id == 4 || Order.OrderStatus.Id == 6 || Order.OrderStatus.Id == 8))
+        @if (ViewerId == Executor.Id && (Order.OrderStatus.Id == 2 || Order.OrderStatus.Id == 4 || Order.OrderStatus.Id == 6 || Order.OrderStatus.Id == 8))
         {
-                        <MudButton OnClick="@(() => ChangeStatus())"
-                            StartIcon="@Icons.Material.Filled.Update"
-                            Variant="Variant.Filled"
-                            Color="Color.Primary">Изменить статус на @Order.NextOrderStatus.Description</MudButton>
+            <MudButton OnClick="@(() => ChangeStatus())"
+                       StartIcon="@Icons.Material.Filled.Update"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary">Изменить статус на @Order.NextOrderStatus.Description</MudButton>
                 }
                 else
                 {
@@ -41,21 +44,48 @@
         <MudTextField @bind-Value="Executor.Name" Label="Имя исполнителя" ReadOnly="true" Variant="Variant.Text" />
         <MudTextField @bind-Value="Executor.Contacts[0].Address" Label="Контакт" ReadOnly="true" Variant="Variant.Text" />
         <MudDivider />
-        <MudText Typo="Typo.body1" Align="Align.Left">
-            Файлы по заказу
-        </MudText>
-        @*<MudTable Items="@Construction.Services" Dense="true" Hover="true" Bordered="true" Striped="true">
+        <MudTable Items="@Files" Dense="true" Hover="true" Bordered="true" Striped="true">
             <ToolBarContent>
-                <MudText Typo="Typo.h6">Необходимые услуги</MudText>
+                <MudText Typo="Typo.h6">Файлы по заказу</MudText>
                 <MudSpacer />
             </ToolBarContent>
             <HeaderContent>
-                <MudTh>Название услуги</MudTh>
+                <MudTh>Название</MudTh>
+                <MudTh>Скачать</MudTh>
+                <MudTh>Удалить</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd>@context.ServiceName</MudTd>
+                <MudTd>@context.FileName</MudTd>
+                <MudTd>
+                    <MudButton HtmlTag="label"
+                               Variant="Variant.Filled"
+                               Color="Color.Info"
+                               Class="mr-5"
+                               OnClick="(()=>DownloadFile(context.Id))"
+                               StartIcon="@Icons.Filled.CloudDownload">
+                    </MudButton>
+                </MudTd>
+                <MudTd>
+                    <MudButton HtmlTag="label"
+                               Variant="Variant.Filled"
+                               Color="Color.Error"
+                               Class="mr-5"
+                               OnClick="(()=>DeleteFile(context.Id))"
+                               StartIcon="@Icons.Filled.Delete">
+                    </MudButton>
+                </MudTd>
             </RowTemplate>
-        </MudTable>*@
+        </MudTable>
+        <InputFile id="fileInput" OnChange="UploadFiles" hidden multiple />
+        <MudButton HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Class="mr-5"
+                   StartIcon="@Icons.Filled.CloudUpload"
+                   for="fileInput">
+            Прикрепить файл
+        </MudButton>
+        <MudDivider />
         <MudLink Href="https://zoom.us/start/videomeeting">Созвониться</MudLink>
     </DialogContent>
     <DialogActions>
@@ -73,6 +103,8 @@
     [Parameter] public Construction Construction { get; set; }
 
     [Parameter] public long ViewerId { get; set; }
+
+    [Parameter] public List<UserFile> Files { get; set; }
 
     public string Error { get; set; } = string.Empty;
 
@@ -94,5 +126,57 @@
         }
 
 
+    }
+
+    private async Task DownloadFile(long fileId)
+    {
+        var request = await FileService.GetFile(fileId);
+        if (request.Success)
+        {
+            var file = request.Data;
+            var base64String = Convert.ToBase64String(file.FileContent);
+            var fileName = file.FileName;
+
+            await JS.InvokeVoidAsync("downloadFile", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", base64String, fileName);
+        }
+        else
+        {
+            Snackbar.Add("Ошибка: " + request.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteFile(long fileId)
+    {
+        var request = await FileService.DeleteFileOfOrder(Order.Id, fileId);
+        if (request.Success)
+        {
+            Files = request.Data;
+        }
+        else
+        {
+            Snackbar.Add("Ошибка: " + request.Message, Severity.Error);
+        }
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            using (var ms = new MemoryStream())
+            {
+                await file.OpenReadStream().CopyToAsync(ms);
+
+                var newFile = new UserFile() { FileName = file.Name, FileContent = ms.ToArray() };
+                var request = await FileService.AddFileToOrder(Order.Id, newFile);
+                if (request.Success)
+                {
+                    Files = request.Data;
+                }
+                else
+                {
+                    Snackbar.Add("Ошибка: " + request.Message, Severity.Error);
+                }
+            }
+        }
     }
 }

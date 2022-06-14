@@ -16,5 +16,11 @@ namespace ACM_Website.Client.Services.FileService
         Task<ServiceResponse<List<UserFile>>> GetExecutorFiles(long executorId);
 
         Task<ServiceResponse<List<UserFile>>> DeleteFileOfExecutor(long executorId, long fileId);
+
+        Task<ServiceResponse<List<UserFile>>> AddFileToOrder(long orderId, UserFile file);
+
+        Task<ServiceResponse<List<UserFile>>> GetOrderFiles(long orderId);
+
+        Task<ServiceResponse<List<UserFile>>> DeleteFileOfOrder(long orderId, long fileId);
     }
 }

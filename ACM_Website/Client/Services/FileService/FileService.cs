@@ -32,7 +32,7 @@ namespace ACM_Website.Client.Services.FileService
 
         public async Task<ServiceResponse<List<UserFile>>> DeleteFileOfExecutor(long executorId, long fileId)
         {
-            var result = await _http.DeleteAsync($"{apiConnection}/File/DeleteDeleteFileOfExecutor/{executorId}/{fileId}");
+            var result = await _http.DeleteAsync($"{apiConnection}/File/DeleteFileOfExecutor/{executorId}/{fileId}");
             return await result.Content.ReadFromJsonAsync<ServiceResponse<List<UserFile>>>();
         }
 
@@ -46,6 +46,24 @@ namespace ACM_Website.Client.Services.FileService
         {
             var result = await _http.GetAsync($"{apiConnection}/File/GetFile/{fileId}");
             return await result.Content.ReadFromJsonAsync<ServiceResponse<UserFile>>();
+        }
+
+        public async Task<ServiceResponse<List<UserFile>>> AddFileToOrder(long orderId, UserFile file)
+        {
+            var result = await _http.PostAsJsonAsync($"{apiConnection}/File/AddFileToOrder/{orderId}", file);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<UserFile>>>();
+        }
+
+        public async Task<ServiceResponse<List<UserFile>>> DeleteFileOfOrder(long orderId, long fileId)
+        {
+            var result = await _http.DeleteAsync($"{apiConnection}/File/DeleteFileOfOrder/{orderId}/{fileId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<UserFile>>>();
+        }
+
+        public async Task<ServiceResponse<List<UserFile>>> GetOrderFiles(long orderId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/File/GetOrderFiles/{orderId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<UserFile>>>();
         }
     }
 }

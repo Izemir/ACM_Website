@@ -1,4 +1,5 @@
 ﻿using ACM_API.Models.Customer;
+using System.Collections.Generic;
 
 namespace ACM_API.Models.Order
 {
@@ -15,5 +16,7 @@ namespace ACM_API.Models.Order
         public Executor.Executor Executor { get; set; }
 
         public Chat.Chat Chat { get; set; }
+
+        public List<UserFile> Files { get; set; }
     }
 }

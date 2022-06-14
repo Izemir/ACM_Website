@@ -51,7 +51,7 @@ namespace ACM_API.Services.FileService
                     return serviceResponse;
                 }
 
-                var path = await UploadAsync(executor.Id, file);
+                var path = await UploadAsync("Executor",executor.Id, file);
                 if(path == null)
                 {
                     serviceResponse.Success = false;
@@ -199,9 +199,9 @@ namespace ACM_API.Services.FileService
             return serviceResponse;
         }
 
-        private async Task<string> UploadAsync(long executorId,UserFileDto file)
+        private async Task<string> UploadAsync(string pathName,long ownerId,UserFileDto file)
         {
-            var directory = Path.Combine(_webHostEnvironment.ContentRootPath, "Files\\Executor", executorId.ToString());
+            var directory = Path.Combine(_webHostEnvironment.ContentRootPath, $"Files\\{pathName}", ownerId.ToString());
 
             try
             {
@@ -237,6 +237,140 @@ namespace ACM_API.Services.FileService
                 return false;
             }
             
+        }
+
+        public async Task<ServiceResponse<List<UserFileDto>>> AddFileToOrder(long orderId, UserFileDto file)
+        {
+            var serviceResponse = new ServiceResponse<List<UserFileDto>>();
+            try
+            {
+
+                var order = await _context.Orders
+                    .Include(i => i.Files)
+                    .FirstOrDefaultAsync(i => i.Id == orderId);
+
+                if (order == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такого заказа";
+                    return serviceResponse;
+                }
+
+                if (order.Files.FirstOrDefault(i => i.FileName == file.FileName) != null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Уже существует файл с таким именем";
+                    return serviceResponse;
+                }
+
+                var path = await UploadAsync("Order", order.Id, file);
+                if (path == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Ошибка доступа к файловой системе";
+                    return serviceResponse;
+                }
+                file.Path = path;
+
+                var newFile = _mapper.Map<UserFile>(file);
+
+                order.Files.Add(newFile);
+
+                _context.Entry(order).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
+
+                serviceResponse.Data = order.Files.Select(i => _mapper.Map<UserFileDto>(i)).ToList();
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<UserFileDto>>> GetOrderFiles(long orderId)
+        {
+            var serviceResponse = new ServiceResponse<List<UserFileDto>>();
+            try
+            {
+                var order = await _context.Orders
+                    .Include(i => i.Files)
+                    .FirstOrDefaultAsync(i => i.Id == orderId);
+
+                if (order == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такого заказа";
+                    return serviceResponse;
+                }
+
+                List<UserFileDto> fileDtos = new List<UserFileDto>();
+                if (order.Files.Count > 0)
+                {
+                    fileDtos = order.Files.Select(i => _mapper.Map<UserFileDto>(i)).ToList();
+                }
+
+                serviceResponse.Data = fileDtos;
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<UserFileDto>>> DeleteFileOfOrder(long orderId, long fileId)
+        {
+            var serviceResponse = new ServiceResponse<List<UserFileDto>>();
+            try
+            {
+                var order = await _context.Orders
+                    .Include(i => i.Files)
+                    .FirstOrDefaultAsync(i => i.Id == orderId);
+
+                if (order == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такого заказа";
+                    return serviceResponse;
+                }
+
+                var file = order.Files.FirstOrDefault(i => i.Id == fileId);
+
+                if (file == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такого файла";
+                    return serviceResponse;
+                }
+
+                var delete = await DeleteFileAsync(file);
+
+                if (!delete)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Не удалось удалить файл";
+                    return serviceResponse;
+                }
+
+                _context.Entry(file).State = EntityState.Deleted;
+
+                await _context.SaveChangesAsync();
+
+                serviceResponse.Data = order.Files.Select(i => _mapper.Map<UserFileDto>(i)).ToList();
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
         }
     }
 }

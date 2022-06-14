@@ -6,6 +6,7 @@
 @inject IOrderService OrderService
 @inject IExecutorService ExecutorService
 @inject IDialogService DialogService
+@inject IFileService FileService
 
 @if (WebChat == null)
 {
@@ -157,18 +158,32 @@ else
                 var requestThree = await ExecutorService.GetExecutor(order.ExecutorId);
                 if (requestThree.Success)
                 {
-                    var executor = requestThree.Data;
-
-                    var parameters = new DialogParameters
+                    var requestFour = await FileService.GetOrderFiles(order.Id);
+                    if (!requestFour.Success)
                     {
-                        ["Construction"] = construction,
-                        ["Order"] = order,
-                        ["Executor"] = executor,
-                        ["ViewerId"] = Sender.SenderId,
-                    };
-                    DialogOptions maxWidth = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+                        message = requestThree.Message;
+                        messageCssClass = "text-danger";
+                    }
+                    else
+                    {
+                        var executor = requestThree.Data;
+                        var files = requestFour.Data;
 
-                    var dialog = DialogService.Show<ShowOrderDialog>($"Заказ по {construction.ConstructionName}", parameters, maxWidth);
+                        var parameters = new DialogParameters
+                        {
+                            ["Construction"] = construction,
+                            ["Order"] = order,
+                            ["Executor"] = executor,
+                            ["ViewerId"] = Sender.SenderId,
+                            ["Files"] = files
+                        };
+                        DialogOptions maxWidth = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+                        var dialog = DialogService.Show<ShowOrderDialog>($"Заказ по {construction.ConstructionName}", parameters, maxWidth);
+                    }
+
+
+
                 }
                 else
                 {

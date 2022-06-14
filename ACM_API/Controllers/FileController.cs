@@ -60,11 +60,51 @@ namespace ACM_API.Controllers
             return Ok(response);
         }
 
-        [HttpDelete("DeleteDeleteFileOfExecutor/{executorId}/{fileId}")]
+        [HttpDelete("DeleteFileOfExecutor/{executorId}/{fileId}")]
         [EnableCors("CorsPolicy")]
         public async Task<ActionResult<List<UserFileDto>>> DeleteFileOfExecutor(long executorId, long fileId)
         {
             var response = await _fileService.DeleteFileOfExecutor(executorId, fileId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPost("AddFileToOrder/{orderId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<UserFileDto>>> AddFileToOrder(long orderId, UserFileDto file)
+        {
+            var response = await _fileService.AddFileToOrder(orderId, file);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+
+        [HttpGet("GetOrderFiles/{orderId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<UserFileDto>>> GetOrderFiles(long orderId)
+        {
+            var response = await _fileService.GetOrderFiles(orderId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpDelete("DeleteFileOfOrder/{orderId}/{fileId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<UserFileDto>>> DeleteFileOfOrder(long orderId, long fileId)
+        {
+            var response = await _fileService.DeleteFileOfOrder(orderId, fileId);
             if (response.Data == null)
             {
                 return BadRequest(response);
