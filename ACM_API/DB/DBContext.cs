@@ -2,6 +2,7 @@
 using ACM_API.Models.Chat;
 using ACM_API.Models.Customer;
 using ACM_API.Models.Executor;
+using ACM_API.Models.Order;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,10 @@ namespace ACM_API.DB
         public DbSet<Chat> Chats { get; set; }
 
         public DbSet<UserFile> Files { get; set; }
+
+        public DbSet<Order> Orders { get; set; }
+
+        public DbSet<OrderStatus> OrderStatuses { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

@@ -97,5 +97,11 @@ namespace ACM_Website.Client.Services.CustomerService
             var result = await _http.PutAsJsonAsync($"{apiConnection}/Customer/Update", customer);
             return await result.Content.ReadFromJsonAsync<ServiceResponse<WebCustomer>>();
         }
+
+        public async Task<ServiceResponse<Construction>> GetConstruction(long constructionId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Customer/GetConstruction/{constructionId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<Construction>>();
+        }
     }
 }

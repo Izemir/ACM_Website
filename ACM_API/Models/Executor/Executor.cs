@@ -33,5 +33,7 @@ namespace ACM_API.Models.Executor
 
         public List<UserFile> Files { get; set; }
 
+        public List<Order.Order> Orders { get; set; }
+
     }
 }

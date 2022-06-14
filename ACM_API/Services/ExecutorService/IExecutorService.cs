@@ -24,5 +24,7 @@ namespace ACM_API.Services.ExecutorService
         Task<ServiceResponse<List<CompetencyDto>>> GetCompetencyList();
 
         Task<ServiceResponse<long>> ExistExecutor(long userId);
+
+        Task<ServiceResponse<bool>> IsExecutorApproved(long executorId);
     }
 }

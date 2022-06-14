@@ -59,6 +59,12 @@ namespace ACM_Website.Client.Services.ExecutorService
             return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Speciality>>>();
         }
 
+        public async Task<ServiceResponse<bool>> IsExecutorApproved(long executorId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Executor/IsExecutorApproved/{executorId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+        }
+
         public async Task<ServiceResponse<WebExecutor>> UpdateExecutor(WebExecutor executor)
         {
             var result = await _http.PutAsJsonAsync($"{apiConnection}/Executor/Update", executor);

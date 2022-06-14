@@ -99,5 +99,18 @@ namespace ACM_API.Controllers
         {
             return Ok(await _executorService.ExistExecutor(userId));
         }
+
+        [HttpGet("IsExecutorApproved/{executorId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<long>> IsExecutorApproved(long executorId)
+        {
+            var response = await _executorService.IsExecutorApproved(executorId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
     }
 }

@@ -26,6 +26,7 @@ namespace ACM_API.Services.CustomerService
         Task<ServiceResponse<List<CustomerTypeDto>>> GetCustomerTypes();
 
         Task<ServiceResponse<List<ConstructionDto>>> GetConstructions(long customerId);
+        Task<ServiceResponse<ConstructionDto>> GetConstruction(long constructionId);
 
         Task<ServiceResponse<List<ServiceDto>>> GetServices();
 

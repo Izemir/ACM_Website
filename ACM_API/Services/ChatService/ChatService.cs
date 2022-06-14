@@ -40,13 +40,11 @@ namespace ACM_API.Services.ChatService
                 data.Messages = messages;
                 if(chat.Customer.User.Id == requestId)
                 {
-                    data.SenderName = chat.Customer.Name;
-                    data.ChatName = GetChatName(chat.Executor.Name);
+                    data.ChatName = chat.NameForCustomer;
                 }
                 else
                 {
-                    data.SenderName = chat.Executor.Name;
-                    data.ChatName = GetChatName(chat.Customer.Name);
+                    data.ChatName = chat.NameForExecutor;
                 }
 
                 serviceResponse.Data = data;
@@ -74,7 +72,7 @@ namespace ACM_API.Services.ChatService
                 foreach(var chat in customer.Chats)
                 {
                     var chatDto = _mapper.Map<ChatDto>(chat);
-                    chatDto.ChatName = GetChatName(chat.Executor.Name);
+                    chatDto.ChatName = chat.NameForCustomer;
                     chats.Add(chatDto);
                 }
 
@@ -94,16 +92,16 @@ namespace ACM_API.Services.ChatService
             var serviceResponse = new ServiceResponse<List<ChatDto>>();
             try
             {
-                var customer = await _context.Executors
+                var executor = await _context.Executors
                  .Include(i => i.Chats)
                  .ThenInclude(c => c.Customer)
                  .FirstAsync(i => i.Id == executorId);
 
                 List<ChatDto> chats = new List<ChatDto>();
-                foreach (var chat in customer.Chats)
+                foreach (var chat in executor.Chats)
                 {
                     var chatDto = _mapper.Map<ChatDto>(chat);
-                    chatDto.ChatName = GetChatName(chat.Customer.Name);
+                    chatDto.ChatName = chat.NameForExecutor;
                     chats.Add(chatDto);
                 }
 
@@ -136,8 +134,7 @@ namespace ACM_API.Services.ChatService
                 var messages = chat.Messages.Select(i => _mapper.Map<MessageDto>(i)).ToList();
                 var data = _mapper.Map<ChatDto>(chat);
                 data.Messages = messages;
-                data.ChatName = chat.Customer.Name != message.SenderName ? GetChatName(chat.Customer.Name) : GetChatName(chat.Executor.Name);
-                data.SenderName = message.SenderName;
+                data.ChatName = chat.Customer.Id != message.SenderId ? chat.NameForExecutor : chat.NameForCustomer;
 
                 serviceResponse.Data = data;
 
@@ -169,7 +166,7 @@ namespace ACM_API.Services.ChatService
 
                 var data = _mapper.Map<ChatDto>(chat);
                 data.ChatName = GetChatName(chat.Executor.Name);
-                data.SenderName = chat.Customer.Name;
+                //data.SenderName = chat.Customer.Name;
 
                 serviceResponse.Data = data;
 
@@ -217,5 +214,53 @@ namespace ACM_API.Services.ChatService
         {
             return "Чат с " + name;
         }
+
+        public async Task<ServiceResponse<SenderDto>> GetSender(long userId)
+        {
+            var serviceResponse = new ServiceResponse<SenderDto>();
+            try
+            {
+                SenderDto sender = new SenderDto();
+                var user = await _context.Users
+                    .Include(i=>i.Customer)
+                    .Include(i=>i.Executor)
+                    .FirstOrDefaultAsync(i => i.Id == userId);
+                if (user == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "User not found.";
+                    return serviceResponse;
+                }
+
+                if (user.Role == "Заказчик")
+                {
+                    sender.SenderName = user.Customer.Name;
+                    sender.SenderId = user.Customer.Id;
+                }
+                if (user.Role == "Исполнитель")
+                {
+                    sender.SenderName = user.Executor.Name;
+                    sender.SenderId = user.Executor.Id;
+                }
+                if (user.Role == "Администратор")
+                {
+                    sender.SenderName = "Модератор";
+                    sender.SenderId = 0;
+                }
+
+
+                serviceResponse.Data= sender;
+
+
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+    
     }
 }

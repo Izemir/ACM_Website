@@ -4,6 +4,7 @@
 @inject ICustomerService CustomerService
 @inject IChatService ChatService
 @inject ILocalStorageService LocalStorage
+@inject IOrderService OrderService
 
 @if (Executors == null)
 {
@@ -83,34 +84,15 @@ else
     async Task StartChat(long id)
     {
         var userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
-        var customer = await CustomerService.ExistCustomer(userId);
-        if (customer.Success && customer.Data != 0)
+        var order = await OrderService.NewOrder(ConstructionId.Value, id);
+        if (order.Success)
         {
-            long chatId = 0;
-            var existChat = await ChatService.ExistChat(customer.Data, id);
-            if (existChat.Success && existChat.Data != 0)
-            {
-                chatId = existChat.Data;
-                NavigationManager.NavigateTo($"/chat/{chatId}");
-            }
-            else
-            {
-                var newChat = await ChatService.StartNewChat(customer.Data, id);
-                if (newChat.Success)
-                {
-                    chatId = newChat.Data.Id;
-                    NavigationManager.NavigateTo($"/chat/{chatId}");
-                }
-                else
-                {
-                    message = newChat.Message;
-                    messageCssClass = "text-danger";
-                }
-            }
+            long chatId = order.Data.ChatId;
+            NavigationManager.NavigateTo($"/chat/{chatId}");            
         }
         else
         {
-            message = "Нет такого заказчика";
+            message = order.Message;
             messageCssClass = "text-danger";
         }
     }

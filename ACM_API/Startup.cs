@@ -5,6 +5,7 @@ using ACM_API.Services.CustomerService;
 using ACM_API.Services.ExecutorService;
 using ACM_API.Services.FileService;
 using ACM_API.Services.ModeratorService;
+using ACM_API.Services.OrderService;
 using ACM_API.Services.SearchService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -53,6 +54,7 @@ namespace ACM_API.Startup
             services.AddScoped<IModeratorService, ModeratorService>();
             services.AddScoped<IChatService, ChatService>();
             services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IOrderService, OrderService>();
             services.AddControllersWithViews()
                     .AddNewtonsoftJson(options =>
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore

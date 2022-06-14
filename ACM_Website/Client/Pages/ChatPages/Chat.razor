@@ -3,44 +3,58 @@
 @inject IChatService ChatService
 @inject ILocalStorageService LocalStorage
 @inject ICustomerService CustomerService
+@inject IOrderService OrderService
+@inject IExecutorService ExecutorService
+@inject IDialogService DialogService
 
 @if (WebChat == null)
 {
-<span>Загрузка...</span>
-<div class="@messageCssClass">
-    <span>@message</span>
-</div>
+    <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
 }
 else
 {
-<h3>Чаты заказчика</h3>
+    <h3>Чаты заказчика</h3>
 
-@if (WebChat.Messages.Count > 0)
+    @if (WebChat.Messages.Count > 0)
     {
-<MudPaper Height="400px" Width="150%">
-    <MudContainer MaxWidth="MaxWidth.Small">
-        @foreach (var message in WebChat.Messages)
+        <MudPaper Height="400px" Width="100%">
+            <MudContainer MaxWidth="MaxWidth.Small">
+                @foreach (var message in WebChat.Messages)
+                {
+                    @if (message.SenderName == Sender.SenderName)
                     {
-        <MudField Label="@message.SenderName" Variant="Variant.Outlined">@message.Text</MudField>
+                        <MudField Label="@message.SenderName" Style="@($"background:{Colors.Yellow.Lighten3};")" Variant="Variant.Outlined">@message.Text</MudField>
                     }
-    </MudContainer>
-</MudPaper>
+                    else
+                    {
+                        <MudField Label="@message.SenderName" Style="@($"background:{Colors.LightBlue.Lighten3};")" Variant="Variant.Outlined">@message.Text</MudField>
+                    }
+                }
+            </MudContainer>
+        </MudPaper>
     }
-<MudTextField @bind-Value="TextMessage" Label="Писать тут" Variant="Variant.Text"></MudTextField>
-<MudButton OnClick="@(() => SendMessage(TextMessage))"
-           StartIcon="@Icons.Material.Filled.Send"
-           Variant="Variant.Filled"
-           Color="Color.Primary">Отправить сообщение</MudButton>
-<MudButton OnClick="@(() => UpdateChat())"
-           StartIcon="@Icons.Material.Filled.Update"
-           Variant="Variant.Filled"
-           Color="Color.Primary">Обновить чат</MudButton>
+    <MudTextField @bind-Value="TextMessage" Label="Писать тут" Variant="Variant.Text"></MudTextField>
+    <MudButton OnClick="@(() => SendMessage(TextMessage))"
+               StartIcon="@Icons.Material.Filled.Send"
+               Variant="Variant.Filled"
+               Color="Color.Primary">Отправить сообщение</MudButton>
+    <MudButton OnClick="@(() => UpdateChat())"
+               StartIcon="@Icons.Material.Filled.Update"
+               Variant="Variant.Filled"
+               Color="Color.Primary">Обновить чат</MudButton>
+    <MudButton OnClick="@(() => ShowOrder())"
+               StartIcon="@Icons.Material.Filled.Cake"
+               Variant="Variant.Filled"
+               Color="Color.Primary">Открыть заказ</MudButton>
 
 
 
-<div class="@messageCssClass">
-    <span>@message</span>
-</div>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
 }
 
 @code{
@@ -54,11 +68,24 @@ else
 
     public long userId { get; set; }
 
+    public Sender Sender { get; set; }
+
     public string TextMessage { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        var sender = await ChatService.GetSenderInfo(userId);
+        if (sender.Success)
+        {
+            Sender = sender.Data;
+        }
+        else
+        {
+            message = sender.Message;
+            messageCssClass = "text-danger";
+        }
+
         if (ChatId != null)
         {
             var chat = await ChatService.GetChat(ChatId.Value, userId);
@@ -100,13 +127,60 @@ else
         var newMessage = new Message()
         {
             Text = text,
-            SenderName = WebChat.SenderName
+            SenderId = Sender.SenderId,
+            SenderName = Sender.SenderName
         };
         var request = await ChatService.SendMessage(WebChat.Id, newMessage);
         if (request.Success)
         {
             TextMessage = string.Empty;
             WebChat = request.Data;
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    async Task ShowOrder()
+    {
+        var request = await OrderService.GetOrder(WebChat.OrderId);
+
+        if (request.Success)
+        {
+            var order = request.Data;
+            var requestTwo = await CustomerService.GetConstruction(order.ConstructionId);
+            if (requestTwo.Success)
+            {
+                var construction = requestTwo.Data;
+                var requestThree = await ExecutorService.GetExecutor(order.ExecutorId);
+                if (requestThree.Success)
+                {
+                    var executor = requestThree.Data;
+
+                    var parameters = new DialogParameters
+                    {
+                        ["Construction"] = construction,
+                        ["Order"] = order,
+                        ["Executor"] = executor,
+                        ["ViewerId"] = Sender.SenderId,
+                    };
+                    DialogOptions maxWidth = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+                    var dialog = DialogService.Show<ShowOrderDialog>($"Заказ по {construction.ConstructionName}", parameters, maxWidth);
+                }
+                else
+                {
+                    message = requestThree.Message;
+                    messageCssClass = "text-danger";
+                }
+            }
+            else
+            {
+                message = requestTwo.Message;
+                messageCssClass = "text-danger";
+            }
         }
         else
         {

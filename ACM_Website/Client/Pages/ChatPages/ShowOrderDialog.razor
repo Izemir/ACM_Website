@@ -1,0 +1,98 @@
+﻿@inject ISnackbar Snackbar
+@inject IOrderService OrderService
+
+
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Заказ по @Construction.ConstructionName
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="Order.OrderStatus.Description" Label="Статус заказа" ReadOnly="true" Variant="Variant.Text" />
+        @if (ViewerId==Executor.Id && (Order.OrderStatus.Id==2 || Order.OrderStatus.Id == 4 || Order.OrderStatus.Id == 6 || Order.OrderStatus.Id == 8))
+        {
+                        <MudButton OnClick="@(() => ChangeStatus())"
+                            StartIcon="@Icons.Material.Filled.Update"
+                            Variant="Variant.Filled"
+                            Color="Color.Primary">Изменить статус на @Order.NextOrderStatus.Description</MudButton>
+                }
+                else
+                {
+                    <MudButton OnClick="@(() => ChangeStatus())"
+                               StartIcon="@Icons.Material.Filled.Update"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary">Изменить статус на @Order.NextOrderStatus.Description</MudButton>
+                        }
+
+        <MudText Typo="Typo.body1" Align="Align.Left">
+            Объект
+        </MudText>
+        <MudTextField @bind-Value="Construction.ConstructionName" Label="Название объекта" ReadOnly="true" Variant="Variant.Text" />
+        @foreach (var s in Construction.Services)
+        {
+            <MudTextField @bind-Value="s.ServiceName" ReadOnly="true" Variant="Variant.Text" />
+        }
+        <MudDivider />
+        <MudText Typo="Typo.body1" Align="Align.Left">
+            Исполнитель
+        </MudText>
+        <MudTextField @bind-Value="Executor.Name" Label="Имя исполнителя" ReadOnly="true" Variant="Variant.Text" />
+        <MudTextField @bind-Value="Executor.Contacts[0].Address" Label="Контакт" ReadOnly="true" Variant="Variant.Text" />
+        <MudDivider />
+        <MudText Typo="Typo.body1" Align="Align.Left">
+            Файлы по заказу
+        </MudText>
+        @*<MudTable Items="@Construction.Services" Dense="true" Hover="true" Bordered="true" Striped="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Необходимые услуги</MudText>
+                <MudSpacer />
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Название услуги</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.ServiceName</MudTd>
+            </RowTemplate>
+        </MudTable>*@
+        <MudLink Href="https://zoom.us/start/videomeeting">Созвониться</MudLink>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Order Order { get; set; }
+
+    [Parameter] public WebExecutor Executor { get; set; }
+
+    [Parameter] public Construction Construction { get; set; }
+
+    [Parameter] public long ViewerId { get; set; }
+
+    public string Error { get; set; } = string.Empty;
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+    private async void ChangeStatus()
+    {
+
+        var request = await OrderService.ChangeOrderStatus(Order.Id);
+        if (request.Success)
+        {
+            Order = request.Data;
+            StateHasChanged();
+            Snackbar.Add("Статус изменен", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Ошибка", Severity.Error);
+        }
+
+
+    }
+}

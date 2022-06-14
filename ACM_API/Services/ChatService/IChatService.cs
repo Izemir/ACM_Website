@@ -18,8 +18,9 @@ namespace ACM_API.Services.ChatService
 
         Task<ServiceResponse<ChatDto>> SendMessage(long chatId,MessageDto message);
 
-        Task<ServiceResponse<ChatDto>> StartNewChat(long customerId, long executorId);
+        Task<ServiceResponse<ChatDto>> StartNewChat(long constructionId, long executorId);
 
-        Task<ServiceResponse<long>> ExistChat(long customerId, long executorId);
+        Task<ServiceResponse<long>> ExistChat(long constructionId, long executorId);
+        Task<ServiceResponse<SenderDto>> GetSender(long userId);
     }
 }

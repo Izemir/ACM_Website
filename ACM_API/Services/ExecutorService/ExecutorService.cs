@@ -150,6 +150,33 @@ namespace ACM_API.Services.ExecutorService
             return serviceResponse;
         }
 
+        public async Task<ServiceResponse<bool>> IsExecutorApproved(long executorId)
+        {
+            var serviceResponse = new ServiceResponse<bool>();
+            try
+            {
+                var executor = await _context.Executors
+                    .FirstOrDefaultAsync(i => i.Id == executorId);
+
+                if (executor == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет такого исполнителя";
+                    return serviceResponse;
+                }
+
+
+                serviceResponse.Data = executor.Approved;
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
         public async Task<ServiceResponse<ExecutorDto>> UpdateExecutor(ExecutorDto updatedExecutor)
         {
             var serviceResponse = new ServiceResponse<ExecutorDto>();

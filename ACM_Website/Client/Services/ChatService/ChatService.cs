@@ -46,6 +46,12 @@ namespace ACM_Website.Client.Services.ChatService
             return await result.Content.ReadFromJsonAsync<ServiceResponse<List<WebChat>>>();
         }
 
+        public async Task<ServiceResponse<Sender>> GetSenderInfo(long userId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Chat/GetSender/{userId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<Sender>>();
+        }
+
         public async Task<ServiceResponse<WebChat>> SendMessage(long chatId, Message message)
         {
             var result = await _http.PostAsJsonAsync($"{apiConnection}/Chat/SendMessage/{chatId}", message);

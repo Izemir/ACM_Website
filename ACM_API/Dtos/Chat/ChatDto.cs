@@ -13,6 +13,6 @@ namespace ACM_API.Dtos.Chat
 
         public string ChatName { get; set; }
 
-        public string SenderName { get; set; }
+        public long OrderId { get; set; }
     }
 }

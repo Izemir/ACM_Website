@@ -6,16 +6,10 @@ using System.Threading.Tasks;
 
 namespace ACM_Website.Shared
 {
-    public class Message
+    public class Sender
     {
-        public long Id { get; set; }
-
-        public string Text { get; set; }
+        public long  SenderId { get; set; }
 
         public string SenderName { get; set; }
-
-        public long SenderId { get; set; }
-
-        public DateTime DateTime { get; set; } = DateTime.Now;
     }
 }

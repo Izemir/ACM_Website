@@ -3,15 +3,17 @@ using System;
 using ACM_API.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ACM_API.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20220609092441_initial35")]
+    partial class initial35
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,12 +33,6 @@ namespace ACM_API.Migrations
 
                     b.Property<long?>("ExecutorId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("NameForCustomer")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NameForExecutor")
-                        .HasColumnType("text");
 
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
@@ -313,9 +309,6 @@ namespace ACM_API.Migrations
                     b.Property<long?>("ExecutorId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("NextOrderStatusId")
-                        .HasColumnType("bigint");
-
                     b.Property<long?>("OrderStatusId")
                         .HasColumnType("bigint");
 
@@ -324,8 +317,6 @@ namespace ACM_API.Migrations
                     b.HasIndex("ConstructionId");
 
                     b.HasIndex("ExecutorId");
-
-                    b.HasIndex("NextOrderStatusId");
 
                     b.HasIndex("OrderStatusId");
 
@@ -350,7 +341,7 @@ namespace ACM_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("OrderStatuses");
+                    b.ToTable("OrderStatus");
                 });
 
             modelBuilder.Entity("ACM_API.Models.Service", b =>
@@ -577,10 +568,6 @@ namespace ACM_API.Migrations
                         .WithMany("Orders")
                         .HasForeignKey("ExecutorId");
 
-                    b.HasOne("ACM_API.Models.Order.OrderStatus", "NextOrderStatus")
-                        .WithMany()
-                        .HasForeignKey("NextOrderStatusId");
-
                     b.HasOne("ACM_API.Models.Order.OrderStatus", "OrderStatus")
                         .WithMany()
                         .HasForeignKey("OrderStatusId");
@@ -588,8 +575,6 @@ namespace ACM_API.Migrations
                     b.Navigation("Construction");
 
                     b.Navigation("Executor");
-
-                    b.Navigation("NextOrderStatus");
 
                     b.Navigation("OrderStatus");
                 });

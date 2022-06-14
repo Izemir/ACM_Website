@@ -292,6 +292,33 @@ namespace ACM_API.Services.CustomerService
             return serviceResponse;
         }
 
+        public async Task<ServiceResponse<ConstructionDto>> GetConstruction(long constructionId)
+        {
+            var serviceResponse = new ServiceResponse<ConstructionDto>();
+            try
+            {
+                var construction = await _context.Constructions
+                    .Include(i => i.Services)
+                    .FirstAsync(i => i.Id == constructionId);
+
+                if (construction == null)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Нет данного объекта";
+                    return serviceResponse;
+                }
+
+                
+                serviceResponse.Data = _mapper.Map<ConstructionDto>(construction);
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
         public async Task<ServiceResponse<List<ServiceDto>>> GetServices()
         {
             var serviceResponse = new ServiceResponse<List<ServiceDto>>();

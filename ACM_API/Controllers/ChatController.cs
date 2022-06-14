@@ -34,6 +34,19 @@ namespace ACM_API.Controllers
             return Ok(response);
         }
 
+        [HttpGet("GetSender/{userId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<ServiceResponse<SenderDto>>> GetSender(long userId)
+        {
+            var response = await _chatService.GetSender(userId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
         [HttpGet("GetCustomerChats/{customerId}")]
         [EnableCors("CorsPolicy")]
         public async Task<ActionResult<ServiceResponse<List<ChatDto>>>> GetCustomerChats(long customerId)

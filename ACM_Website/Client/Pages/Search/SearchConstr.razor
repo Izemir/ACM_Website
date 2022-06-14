@@ -5,6 +5,9 @@
 @inject IChatService ChatService
 @inject ILocalStorageService LocalStorage
 @inject IDialogService DialogService
+@inject IExecutorService ExecutorService
+@inject ISnackbar Snackbar
+@inject IOrderService OrderService
 
 @if (Constructions == null)
 {
@@ -30,7 +33,7 @@ else
                            Color="Color.Info">Посмотреть объект</MudButton>
             </MudTd>
             <MudTd>
-                <MudButton OnClick="@(() => StartChat(context.CustomerId))"
+                <MudButton OnClick="@(() => StartChat(context.Id))"
                            StartIcon="@Icons.Material.Filled.Send"
                            Variant="Variant.Filled"
                            Color="Color.Primary">Написать</MudButton>
@@ -52,6 +55,8 @@ else
     string message = string.Empty;
     string messageCssClass = string.Empty;
 
+    public bool Approved { get; set; } = false;
+
     protected override async Task OnInitializedAsync()
     {
         if (ExecutorId == null)
@@ -61,6 +66,18 @@ else
         }
         else
         {
+            var approved = await ExecutorService.IsExecutorApproved(ExecutorId.Value);
+            if (approved.Success)
+            {
+                Approved = approved.Data;
+            }
+            else
+            {
+                message = approved.Message;
+                messageCssClass = "text-danger";
+            }
+
+
             var request = await SearchService.GetConstructionsForExecutor(ExecutorId.Value);
             if (request.Success)
             {
@@ -93,26 +110,24 @@ else
 
     async Task StartChat(long id)
     {
-        long chatId = 0;
-        var existChat = await ChatService.ExistChat(id, ExecutorId.Value);
-        if (existChat.Success && existChat.Data != 0)
+        if (Approved)
         {
-            chatId = existChat.Data;
-            NavigationManager.NavigateTo($"/chat/{chatId}");
-        }
-        else
-        {
-            var newChat = await ChatService.StartNewChat(id, ExecutorId.Value);
-            if (newChat.Success)
+            long chatId = 0;
+            var order = await OrderService.NewOrder(id, ExecutorId.Value);
+            if (order.Success)
             {
-                chatId = newChat.Data.Id;
+                chatId = order.Data.ChatId;
                 NavigationManager.NavigateTo($"/chat/{chatId}");
             }
             else
             {
-                message = newChat.Message;
+                message = order.Message;
                 messageCssClass = "text-danger";
             }
+        }
+        else
+        {
+            Snackbar.Add("Исполнитель не одобрен.", Severity.Warning);
         }
     }
 }

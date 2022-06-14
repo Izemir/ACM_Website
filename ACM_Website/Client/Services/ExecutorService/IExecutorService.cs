@@ -15,5 +15,6 @@ namespace ACM_Website.Client.Services.ExecutorService
         Task<ServiceResponse<List<Speciality>>> GetSpecialityList();
         Task<ServiceResponse<bool>> DeleteExecutor(long userId);
         Task<ServiceResponse<WebExecutor>> UpdateExecutor(WebExecutor executor);
+        Task<ServiceResponse<bool>> IsExecutorApproved(long executorId);
     }
 }

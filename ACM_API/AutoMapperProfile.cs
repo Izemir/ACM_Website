@@ -2,11 +2,13 @@
 using ACM_API.Dtos.Chat;
 using ACM_API.Dtos.Customer;
 using ACM_API.Dtos.Executor;
+using ACM_API.Dtos.Order;
 using ACM_API.Dtos.User;
 using ACM_API.Models;
 using ACM_API.Models.Chat;
 using ACM_API.Models.Customer;
 using ACM_API.Models.Executor;
+using ACM_API.Models.Order;
 using AutoMapper;
 using System;
 using System.Collections.Generic;
@@ -41,6 +43,11 @@ namespace ACM_API
 
             CreateMap<UserFileDto, UserFile>();
             CreateMap<UserFile, UserFileDto>();
+
+            CreateMap<OrderDto, Order>();
+            CreateMap<Order, OrderDto>();
+            CreateMap<OrderStatusDto, OrderStatus>();
+            CreateMap<OrderStatus, OrderStatusDto>();
         }
     }
 }

@@ -13,6 +13,8 @@ namespace ACM_API.Dtos.Chat
 
         public string SenderName { get; set; }
 
+        public long SenderId { get; set; }
+
         public DateTime DateTime { get; set; } = DateTime.Now;
     }
 }

@@ -105,6 +105,19 @@ namespace ACM_API.Controllers
             return Ok(response);
         }
 
+        [HttpGet("GetConstruction/{constructionId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<ConstructionDto>> GetConstruction(long constructionId)
+        {
+            var response = await _customerService.GetConstruction(constructionId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
         [HttpGet("GetServices")]
         [EnableCors("CorsPolicy")]
         public async Task<ActionResult<List<ServiceDto>>> GetServices()

@@ -20,5 +20,7 @@ namespace ACM_Website.Client.Services.ChatService
         Task<ServiceResponse<WebChat>> StartNewChat(long customerId, long executorId);
 
         Task<ServiceResponse<long>> ExistChat(long customerId, long executorId);
+
+        Task<ServiceResponse<Sender>> GetSenderInfo(long userId);
     }
 }

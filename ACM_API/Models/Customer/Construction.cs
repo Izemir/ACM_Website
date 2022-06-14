@@ -11,5 +11,7 @@ namespace ACM_API.Models.Customer
         public string ConstructionName { get; set; }
         public string Description { get; set; }
         public List<Service> Services { get; set; }
+        
+        public List<Order.Order> Orders { get; set; }
     }
 }
