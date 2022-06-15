@@ -8,6 +8,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -67,6 +68,11 @@ namespace ACM_API.Services.CustomerService
                     .Include(i=>i.Chats)
                     .ThenInclude(j=>j.Messages)
                     .Include(i=>i.Constructions)
+                    .ThenInclude(j=>j.Orders)
+                    .ThenInclude(o=>o.Chat)
+                    .Include(i => i.Constructions)
+                    .ThenInclude(j => j.Orders)
+                    .ThenInclude(o => o.Files)
                     .FirstAsync(i => i.User == user);
 
                 foreach(var person in customer.ContactPersons)
@@ -87,6 +93,28 @@ namespace ACM_API.Services.CustomerService
                 }
                 foreach (var c in customer.Constructions)
                 {
+                    foreach(var order in c.Orders)
+                    {
+                        foreach(var file in order.Files)
+                        {
+                            await DeleteFileAsync(file);
+                            _context.Entry(file).State = EntityState.Deleted;
+                        }
+                        var chat = order.Chat;
+                        if (chat != null)
+                        {
+                            if (chat.Messages != null)
+                            {
+                                foreach (var message in chat.Messages)
+                                {
+                                    _context.Entry(message).State = EntityState.Deleted;
+                                }
+                            }
+                            _context.Entry(chat).State = EntityState.Deleted;
+                        }
+                        _context.Entry(order).State = EntityState.Deleted;
+                    }
+
                     _context.Entry(c).State = EntityState.Deleted;
                 }
 
@@ -357,10 +385,36 @@ namespace ACM_API.Services.CustomerService
             {
                 var customer = await _context.Customers
                     .Include(i => i.Constructions)
-                    .ThenInclude(j=>j.Services)
+                    .ThenInclude(j=>j.Orders)
+                    .ThenInclude(o=>o.Chat)
+                    .Include(i => i.Constructions)
+                    .ThenInclude(j => j.Orders)
+                    .ThenInclude(o => o.Files)
                     .FirstAsync(i => i.Id == customerId);
 
                 var construction = customer.Constructions.Find(i => i.Id == constructionId);
+
+                foreach (var order in construction.Orders)
+                {
+                    foreach (var file in order.Files)
+                    {
+                        await DeleteFileAsync(file);
+                        _context.Entry(file).State = EntityState.Deleted;
+                    }
+                    var chat = order.Chat;
+                    if (chat != null)
+                    {
+                        if (chat.Messages != null)
+                        {
+                            foreach (var message in chat.Messages)
+                            {
+                                _context.Entry(message).State = EntityState.Deleted;
+                            }
+                        }
+                        _context.Entry(chat).State = EntityState.Deleted;
+                    }
+                    _context.Entry(order).State = EntityState.Deleted;
+                }
 
                 customer.Constructions.Remove(construction);
 
@@ -376,5 +430,27 @@ namespace ACM_API.Services.CustomerService
             }
             return serviceResponse;
         }
+        private async Task<bool> DeleteFileAsync(UserFile file)
+        {
+            try
+            {
+                if (File.Exists(file.Path))
+                {
+                    File.Delete(file.Path);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+        }
     }
+
+    
 }

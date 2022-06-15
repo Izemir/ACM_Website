@@ -35,10 +35,10 @@ namespace ACM_Website.Client.Services.AuthService
             return await result.Content.ReadFromJsonAsync<ServiceResponse<WebUser>>();
         }
 
-        public async Task<ServiceResponse<long>> Register(UserRegister request)
+        public async Task<ServiceResponse<WebUser>> Register(UserRegister request)
         {
             var result = await _http.PostAsJsonAsync($"{apiConnection}/Auth/register", request);
-            return await result.Content.ReadFromJsonAsync<ServiceResponse<long>>();
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<WebUser>>();
         }
     }
 }

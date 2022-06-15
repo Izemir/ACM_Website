@@ -9,7 +9,7 @@ namespace ACM_API.Services.AuthService
 {
     public interface IAuthService
     {
-        Task<ServiceResponse<long>> Register(UserDto user, string password);
+        Task<ServiceResponse<UserDto>> Register(UserDto user, string password);
         Task<bool> UserExists(string email);
         Task<ServiceResponse<UserDto>> Login(string email, string password);
 

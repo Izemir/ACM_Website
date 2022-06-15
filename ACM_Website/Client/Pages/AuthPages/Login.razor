@@ -65,6 +65,7 @@
             }
             await AuthenticationStateProvider.GetAuthenticationStateAsync();
             NavigationManager.NavigateTo(returnUrl);
+            StateHasChanged();
         }
         else
         {

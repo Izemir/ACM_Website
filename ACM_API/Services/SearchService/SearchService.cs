@@ -42,7 +42,10 @@ namespace ACM_API.Services.SearchService
                 foreach(var c in executor.Competency){
                     foreach(var s in c.Service)
                     {
-                        constructions.AddRange(s.Constructions);
+                        foreach(var construction in s.Constructions)
+                        {
+                            if(!constructions.Contains(construction)) constructions.Add(construction);
+                        }
                     }
                 }
 

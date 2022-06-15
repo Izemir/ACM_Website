@@ -14,20 +14,24 @@
     </TitleContent>
     <DialogContent>
         <MudTextField @bind-Value="Order.OrderStatus.Description" Label="Статус заказа" ReadOnly="true" Variant="Variant.Text" />
-        @if (ViewerId == Executor.Id && (Order.OrderStatus.Id == 2 || Order.OrderStatus.Id == 4 || Order.OrderStatus.Id == 6 || Order.OrderStatus.Id == 8))
+        @if (ViewerId == Executor.Id)
+        {
+            @if (Order.OrderStatus.Id == 2 || Order.OrderStatus.Id == 4 || Order.OrderStatus.Id == 6 || Order.OrderStatus.Id == 8)
+            {
+                <MudButton OnClick="@(() => ChangeStatus())"
+                           StartIcon="@Icons.Material.Filled.Update"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary">Изменить статус на @Order.NextOrderStatus.Description</MudButton>
+                    }
+
+        }
+        else
         {
             <MudButton OnClick="@(() => ChangeStatus())"
                        StartIcon="@Icons.Material.Filled.Update"
                        Variant="Variant.Filled"
                        Color="Color.Primary">Изменить статус на @Order.NextOrderStatus.Description</MudButton>
                 }
-                else
-                {
-                    <MudButton OnClick="@(() => ChangeStatus())"
-                               StartIcon="@Icons.Material.Filled.Update"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary">Изменить статус на @Order.NextOrderStatus.Description</MudButton>
-                        }
 
         <MudText Typo="Typo.body1" Align="Align.Left">
             Объект

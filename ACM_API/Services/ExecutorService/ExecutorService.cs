@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -66,6 +67,10 @@ namespace ACM_API.Services.ExecutorService
                     .Include(i=>i.Contacts)
                     .Include(i => i.Chats)
                     .ThenInclude(j => j.Messages)
+                    .Include(i=>i.Orders)
+                    .ThenInclude(j=>j.Chat)
+                    .Include(i=>i.Orders)
+                    .ThenInclude(j=>j.Files)
                     .FirstAsync(i=>i.User==user);
 
                 foreach (var chat in executor.Chats)
@@ -81,9 +86,31 @@ namespace ACM_API.Services.ExecutorService
                     _context.Entry(contact).State = EntityState.Deleted;
                 }
 
+                foreach (var order in executor.Orders)
+                {
+                    foreach (var file in order.Files)
+                    {
+                        await DeleteFileAsync(file);
+                        _context.Entry(file).State = EntityState.Deleted;
+                    }
+                    var chat = order.Chat;
+                    if (chat != null)
+                    {
+                        if (chat.Messages != null)
+                        {
+                            foreach (var message in chat.Messages)
+                            {
+                                _context.Entry(message).State = EntityState.Deleted;
+                            }
+                        }
+                        _context.Entry(chat).State = EntityState.Deleted;
+                    }                
+                    
+                    _context.Entry(order).State = EntityState.Deleted;
+                }
+
                 user.Executor = null;
                 _context.Executors.Remove(executor);
-                //user.ExecutorId = null;
 
                 await _context.SaveChangesAsync();
 
@@ -217,6 +244,27 @@ namespace ACM_API.Services.ExecutorService
                 serviceResponse.Message = ex.Message;
             }
             return serviceResponse;
+        }
+
+        private async Task<bool> DeleteFileAsync(UserFile file)
+        {
+            try
+            {
+                if (File.Exists(file.Path))
+                {
+                    File.Delete(file.Path);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
         }
     }
 }

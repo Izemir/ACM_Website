@@ -79,13 +79,15 @@ namespace ACM_API.Services.AuthService
             return response;
         }
 
-        public async Task<ServiceResponse<long>> Register(UserDto newUser, string password)
-        {            
+        public async Task<ServiceResponse<UserDto>> Register(UserDto newUser, string password)
+        {
+
+            var response = new ServiceResponse<UserDto>();
             try
             {
                 if (await UserExists(newUser.Email))
                 {
-                    return new ServiceResponse<long>
+                    return new ServiceResponse<UserDto>
                     {
                         Success = false,
                         Message = "Такой пользователь уже существует."
@@ -98,22 +100,21 @@ namespace ACM_API.Services.AuthService
                 var user = await _context.Users.FirstAsync(i => i.Email == newUser.Email);
                 if (user == null)
                 {
-                    return new ServiceResponse<long>
+                    return new ServiceResponse<UserDto>
                     {
                         Success = false,
                         Message = "Ошибка записи в базу"
                     };
                 }
-                else
-                {
-                    return new ServiceResponse<long> { Data = user.Id, Message = "Registration successful!" };
-                }
-                
+                else response.Data=_mapper.Map<UserDto>(user);
             }
             catch (Exception ex)
             {
-                return new ServiceResponse<long> { Success = false, Message = ex.Message };
+                response.Success = false;
+                response.Message = ex.Message;
             }
+
+            return response;         
 
            
         }

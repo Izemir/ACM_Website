@@ -8,7 +8,7 @@ namespace ACM_Website.Client.Services.AuthService
 {
     public interface IAuthService
     {
-        Task<ServiceResponse<long>> Register(UserRegister request);
+        Task<ServiceResponse<WebUser>> Register(UserRegister request);
         Task<ServiceResponse<WebUser>> Login(UserLogin request);
 
         Task<ServiceResponse<bool>> IsAdmin(long userId);

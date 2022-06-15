@@ -23,7 +23,7 @@ namespace ACM_API.Controllers
 
         [HttpPost("register")]
         [EnableCors("CorsPolicy")]
-        public async Task<ActionResult<ServiceResponse<long>>> Register(UserDto request)
+        public async Task<ActionResult<ServiceResponse<UserDto>>> Register(UserDto request)
         {
             //var response = await _authService.Register(
             //    new User
