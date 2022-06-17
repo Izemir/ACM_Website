@@ -14,7 +14,7 @@ namespace ACM_API.Services.ModeratorService
 
         Task<ServiceResponse<List<ExecutorDto>>> GetExecutorsForApproval();
 
-        Task<ServiceResponse<ExecutorDto>> ApproveExecutor(long userId, long executorId);
+        Task<ServiceResponse<List<ExecutorDto>>> ApproveExecutor(long userId, long executorId);
 
         Task<ServiceResponse<List<SpecialityDto>>> AddSpeciality(SpecialityDto speciality);
         Task<ServiceResponse<List<CompetencyDto>>> AddCompetency(CompetencyDto competency);

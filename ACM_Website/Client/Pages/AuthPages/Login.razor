@@ -10,9 +10,9 @@
 <EditForm Model="user" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
     <div class="mb-3">
-        <label for="username">Имя пользователя</label>
-        <InputText id="username" @bind-Value="user.Username" class="form-control" />
-        <ValidationMessage For="@(() => user.Username)" />
+        <label for="email">Email пользователя</label>
+        <InputText id="email" @bind-Value="user.Email" class="form-control" />
+        <ValidationMessage For="@(() => user.Email)" />
     </div>
     <div class="mb-3">
         <label for="password">Пароль</label>

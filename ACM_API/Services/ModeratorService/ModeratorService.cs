@@ -191,9 +191,9 @@ namespace ACM_API.Services.ModeratorService
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<ExecutorDto>> ApproveExecutor(long userId, long executorId)
+        public async Task<ServiceResponse<List<ExecutorDto>>> ApproveExecutor(long userId, long executorId)
         {
-            var serviceResponse = new ServiceResponse<ExecutorDto>();
+            var serviceResponse = new ServiceResponse<List<ExecutorDto>>();
             try
             {
                 var user = await _context.Users.FirstOrDefaultAsync(i => i.Id == userId);
@@ -228,9 +228,12 @@ namespace ACM_API.Services.ModeratorService
                 _context.Entry(executor).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
-                var data = _mapper.Map<ExecutorDto>(executor);
-                data.UserId = executor.User.Id;
-                serviceResponse.Data = data;
+                var executors = _context.Executors
+                    .Include(i => i.Contacts)
+                    .Where(i => i.Approved != true);
+
+
+                serviceResponse.Data = executors.Select(i => _mapper.Map<ExecutorDto>(i)).ToList();
 
             }
             catch (Exception ex)

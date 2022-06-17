@@ -9,8 +9,8 @@ namespace ACM_Website.Shared
 {
     public class UserLogin
     {
-        [Required(ErrorMessage ="Необходимо ввести имя пользователя")]
-        public string Username { get; set; } = string.Empty;
+        [Required(ErrorMessage ="Необходимо ввести email")]
+        public string Email { get; set; } = string.Empty;
         [Required(ErrorMessage = "Необходимо ввести пароль")]
         public string Password { get; set; } = string.Empty;
     }

@@ -47,14 +47,14 @@ namespace ACM_API.Services.AuthService
             return response;
         }
 
-        public async Task<ServiceResponse<UserDto>> Login(string login, string password)
+        public async Task<ServiceResponse<UserDto>> Login(string email, string password)
         {
             
             var response = new ServiceResponse<UserDto>();
             try
             {
                 var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Username.ToLower().Equals(login.ToLower()));
+                .FirstOrDefaultAsync(x => x.Email.ToLower().Equals(email.ToLower()));
                 if (user == null)
                 {
                     response.Success = false;

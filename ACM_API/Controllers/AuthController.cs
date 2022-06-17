@@ -46,7 +46,7 @@ namespace ACM_API.Controllers
         [EnableCors("CorsPolicy")]
         public async Task<ActionResult<ServiceResponse<UserDto>>> Login(UserDto user)
         {
-            var response = await _authService.Login(user.Username, user.Password);
+            var response = await _authService.Login(user.Email, user.Password);
             if (!response.Success)
             {
                 return BadRequest(response);

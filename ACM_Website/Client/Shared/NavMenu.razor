@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject IAuthService AuthService
 @inject ILocalStorageService LocalStorage
+@attribute [Authorize]
 
 <div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">ACM_Website</a>
@@ -18,10 +19,8 @@
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
         </li>
-        <AuthorizeView>
+        <AuthorizeView Roles="Admin">
             <Authorized>
-                @if (Role == "Admin")
-                {
                     <li class="dropdown-divider"></li>
                     <li class="nav-item px-3">
                         <NavLink class="nav-link" href="addscrolls">
@@ -38,42 +37,38 @@
                             <span class="oi oi-briefcase" aria-hidden="true"></span> Список исполнителей
                         </NavLink>
                     </li>
-                }
+                
             </Authorized>
         </AuthorizeView>
         @*<AuthorizeView>
             <Authorized>*@
         @*<li class="nav-item px-3">
-            <NavLink class="nav-link" href="chat">
-                <span class="oi oi-chat" aria-hidden="true"></span> Чат
-            </NavLink>
-        </li>*@
+                <NavLink class="nav-link" href="chat">
+                    <span class="oi oi-chat" aria-hidden="true"></span> Чат
+                </NavLink>
+            </li>*@
         @*</Authorized>
             </AuthorizeView>*@
-        <AuthorizeView>
+        <AuthorizeView Roles="Admin, Customer">
             <Authorized>
-                @if (Role == "Admin" || Role == "Customer")
-                {
                     <li class="dropdown-divider"></li>
                     <li class="nav-item px-3">
                         <NavLink class="nav-link" href="customer">
-                        <span class="oi oi-code" aria-hidden="true"></span> Заказчик
-                    </NavLink>
-                </li>
-                }
+                            <span class="oi oi-code" aria-hidden="true"></span> Заказчик
+                        </NavLink>
+                    </li>
+                
             </Authorized>
         </AuthorizeView>
-        <AuthorizeView>
+        <AuthorizeView Roles="Admin, Executor">
             <Authorized>
-                @if (Role == "Admin" || Role == "Executor")
-                {
                     <li class="dropdown-divider"></li>
                     <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="executor">
-                        <span class="oi oi-code" aria-hidden="true"></span> Исполнитель
-                    </NavLink>
-                </li>
-                }
+                        <NavLink class="nav-link" href="executor">
+                            <span class="oi oi-code" aria-hidden="true"></span> Исполнитель
+                        </NavLink>
+                    </li>
+                
             </Authorized>
         </AuthorizeView>
         <li class="dropdown-divider"></li>
@@ -108,26 +103,26 @@
 
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    string Role { get;set; }
+    string Role { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        Role = await LocalStorage.GetItemAsync<string>("role");
-        if (Role == "-")
-        {
-            var id = await LocalStorage.GetItemAsStringAsync("id");
-            long userId = id==null ? 0 : long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
-            if (userId != 0)
-            {
-                var request = await AuthService.IsAdmin(userId);
-                if (request.Success)
-                {
-                    if (request.Data) Role = "Admin";
+        //Role = await LocalStorage.GetItemAsync<string>("role");
+        //if (Role == "-")
+        //{
+        //    var id = await LocalStorage.GetItemAsStringAsync("id");
+        //    long userId = id == null ? 0 : long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        //    if (userId != 0)
+        //    {
+        //        var request = await AuthService.IsAdmin(userId);
+        //        if (request.Success)
+        //        {
+        //            if (request.Data) Role = "Admin";
 
-                }
-            }
-        }
-        StateHasChanged();
+        //        }
+        //    }
+        //}
+        //StateHasChanged();
 
     }
 

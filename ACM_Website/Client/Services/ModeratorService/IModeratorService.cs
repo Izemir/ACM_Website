@@ -12,7 +12,7 @@ namespace ACM_Website.Client.Services.ModeratorService
 
         Task<ServiceResponse<List<WebExecutor>>> GetExecutorsForApproval();
 
-        Task<ServiceResponse<WebExecutor>> ApproveExecutor(long userId, long executorId);
+        Task<ServiceResponse<List<WebExecutor>>> ApproveExecutor(long userId, long executorId);
 
         Task<ServiceResponse<List<Service>>> AddService(Service service);
         Task<ServiceResponse<List<Competency>>> AddCompetency(Competency competency);

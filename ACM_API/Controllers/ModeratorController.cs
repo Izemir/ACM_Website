@@ -49,7 +49,7 @@ namespace ACM_API.Controllers
 
         [HttpPut("ApproveExe/{userId}/{executorId}")]
         [EnableCors("CorsPolicy")]
-        public async Task<ActionResult<ExecutorDto>> ApproveExecutor(long userId, long executorId)
+        public async Task<ActionResult<List<ExecutorDto>>> ApproveExecutor(long userId, long executorId)
         {
             var response = await _moderatorService.ApproveExecutor(userId,executorId);
             if (response.Data == null)

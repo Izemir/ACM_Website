@@ -43,10 +43,10 @@ namespace ACM_Website.Client.Services.ModeratorService
             return await result.Content.ReadFromJsonAsync<ServiceResponse<List<Speciality>>>();
         }
 
-        public async Task<ServiceResponse<WebExecutor>> ApproveExecutor(long userId, long executorId)
+        public async Task<ServiceResponse<List<WebExecutor>>> ApproveExecutor(long userId, long executorId)
         {
             var result = await _http.PutAsJsonAsync($"{apiConnection}/Moderator/ApproveExe/{userId}/{executorId}",0);
-            return await result.Content.ReadFromJsonAsync<ServiceResponse<WebExecutor>>();
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<WebExecutor>>>();
         }
 
         public async Task<ServiceResponse<List<Competency>>> DeleteCompetency(long competencyId)
