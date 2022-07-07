@@ -1,5 +1,6 @@
 ﻿using ACM_API.DB;
 using ACM_API.Dtos.Chat;
+using ACM_API.Dtos.Customer;
 using ACM_API.Models;
 using ACM_API.Models.Chat;
 using AutoMapper;
@@ -34,10 +35,13 @@ namespace ACM_API.Services.ChatService
                  .Include(i=> i.Executor)
                  .Include(i=>i.Customer)
                  .ThenInclude(e => e.User)
+                 .Include(i=>i.SubCustomers)
                  .FirstAsync(i => i.Id == chatId);
                 var messages = chat.Messages.Select(i => _mapper.Map<MessageDto>(i)).ToList();
+                var subs = chat.SubCustomers.Select(i => _mapper.Map<SubCustomerDto>(i)).ToList();
                 var data = _mapper.Map<ChatDto>(chat);
                 data.Messages = messages;
+                data.SubCustomers = subs;
                 if(chat.Customer.User.Id == requestId)
                 {
                     data.ChatName = chat.NameForCustomer;
@@ -125,6 +129,7 @@ namespace ACM_API.Services.ChatService
                  .Include(i => i.Messages)
                  .Include(i => i.Executor)
                  .Include(i => i.Customer)
+                 .Include(i=>i.SubCustomers)
                  .FirstAsync(i => i.Id == chatId);
 
                 chat.Messages.Add(_mapper.Map<Message>(message));
@@ -134,7 +139,9 @@ namespace ACM_API.Services.ChatService
                 var messages = chat.Messages.Select(i => _mapper.Map<MessageDto>(i)).ToList();
                 var data = _mapper.Map<ChatDto>(chat);
                 data.Messages = messages;
-                data.ChatName = chat.Customer.Id != message.SenderId ? chat.NameForExecutor : chat.NameForCustomer;
+                data.ChatName = chat.Executor.Id == message.SenderId ? chat.NameForExecutor : chat.NameForCustomer;
+                var subs = chat.SubCustomers.Select(i => _mapper.Map<SubCustomerDto>(i)).ToList();
+                data.SubCustomers = subs;
 
                 serviceResponse.Data = data;
 
@@ -261,6 +268,97 @@ namespace ACM_API.Services.ChatService
             }
             return serviceResponse;
         }
-    
+
+        public async Task<ServiceResponse<List<ChatDto>>> GetSubCustomerChats(long subCustomerId)
+        {
+            var serviceResponse = new ServiceResponse<List<ChatDto>>();
+            try
+            {
+                var sub = await _context.SubCustomers
+                 .Include(i => i.Chats)
+                 .FirstAsync(i => i.Id == subCustomerId);
+
+                List<ChatDto> chats = new List<ChatDto>();
+                foreach (var chat in sub.Chats)
+                {
+                    var chatDto = _mapper.Map<ChatDto>(chat);
+                    chatDto.ChatName = chat.NameForCustomer;
+                    chats.Add(chatDto);
+                }
+
+                serviceResponse.Data = chats;
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<ChatDto>> AddSubToChat(long chatId, long subCustomerId)
+        {
+            var serviceResponse = new ServiceResponse<ChatDto>();
+            try
+            {
+                var chat = await _context.Chats
+                    .Include(i => i.SubCustomers)
+                    .FirstOrDefaultAsync(i => i.Id == chatId);
+
+                var sub = await _context.SubCustomers
+                    .Include(i => i.Chats)
+                    .FirstOrDefaultAsync(i => i.Id == subCustomerId);
+
+                chat.SubCustomers.Add(sub);
+                _context.Entry(chat).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                var data = _mapper.Map<ChatDto>(chat);
+                var subs = chat.SubCustomers.Select(i => _mapper.Map<SubCustomerDto>(i)).ToList();
+                data.SubCustomers = subs;
+
+                serviceResponse.Data = data;
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<ChatDto>> DeleteSubFromChat(long chatId, long subCustomerId)
+        {
+            var serviceResponse = new ServiceResponse<ChatDto>();
+            try
+            {
+                var chat = await _context.Chats
+                    .Include(i => i.SubCustomers)
+                    .FirstOrDefaultAsync(i => i.Id == chatId);
+
+                var sub = await _context.SubCustomers
+                    .Include(i => i.Chats)
+                    .FirstOrDefaultAsync(i => i.Id == subCustomerId);
+
+                chat.SubCustomers.Remove(sub);
+                _context.Entry(chat).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                var data = _mapper.Map<ChatDto>(chat);
+                var subs = chat.SubCustomers.Select(i => _mapper.Map<SubCustomerDto>(i)).ToList();
+                data.SubCustomers = subs;
+
+                serviceResponse.Data = data;
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
     }
 }

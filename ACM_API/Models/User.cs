@@ -19,9 +19,12 @@ namespace ACM_API.Models
 
 
         public long? CustomerId { get; set; }
-        public Customer.Customer Customer { get; set; }        
+        public Customer.Customer Customer { get; set; }
+        public Customer.SubCustomer SubCustomer { get; set; }
 
         public long? ExecutorId { get; set; }
+
+        public long? SubCustomerId { get; set; }
 
         public Executor.Executor Executor { get; set; }        
 

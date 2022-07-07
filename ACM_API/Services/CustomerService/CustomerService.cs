@@ -67,6 +67,8 @@ namespace ACM_API.Services.CustomerService
                     .Include(i => i.CustomerType)
                     .Include(i=>i.Chats)
                     .ThenInclude(j=>j.Messages)
+                    .Include(i => i.Chats)
+                    .ThenInclude(j => j.SubCustomers)
                     .Include(i=>i.Constructions)
                     .ThenInclude(j=>j.Orders)
                     .ThenInclude(o=>o.Chat)
@@ -89,6 +91,7 @@ namespace ACM_API.Services.CustomerService
                     {
                         _context.Entry(message).State = EntityState.Deleted;
                     }
+                    chat.SubCustomers.Clear();
                     _context.Entry(chat).State = EntityState.Deleted;
                 }
                 foreach (var c in customer.Constructions)
@@ -449,6 +452,204 @@ namespace ACM_API.Services.CustomerService
                 return false;
             }
 
+        }
+
+        public async Task<ServiceResponse<SubCustomerDto>> AddSubCustomer(SubCustomerDto sub, long userId)
+        {
+            var serviceResponse = new ServiceResponse<SubCustomerDto>();
+            try
+            {
+                var subCustomer = _mapper.Map<SubCustomer>(sub);
+                subCustomer.CustomerType = _context.CustomerTypes.First(i => i.Id == sub.CustomerType.Id);
+                _context.SubCustomers.Add(subCustomer);
+                var user = await _context.Users.FirstAsync(i => i.Id == userId);
+                user.SubCustomer = subCustomer;
+                _context.Entry(user).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                serviceResponse.Data = _mapper.Map<SubCustomerDto>(subCustomer);
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<SubCustomerDto>> UpdateSubCustomer(SubCustomerDto sub)
+        {
+            var serviceResponse = new ServiceResponse<SubCustomerDto>();
+            try
+            {
+                var subCustomer = await _context.SubCustomers
+                    .Include(i => i.ContactPerson)
+                    .ThenInclude(j => j.Contacts)
+                    .Include(i => i.CustomerType)
+                    .FirstAsync(i => i.Id == sub.Id);
+
+                subCustomer.CustomerType = _context.CustomerTypes.First(i => i.Id == sub.CustomerType.Id);
+
+                subCustomer.Name = sub.Name;
+                subCustomer.FullName = sub.FullName;
+                subCustomer.Address = sub.Address;
+                subCustomer.ActualAddress = sub.ActualAddress;
+                subCustomer.OGRN = sub.OGRN;
+                subCustomer.INN = sub.INN;
+                subCustomer.KPP = sub.KPP;
+                subCustomer.ContactPerson = sub.ContactPerson;
+
+                _context.Entry(subCustomer).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                serviceResponse.Data = _mapper.Map<SubCustomerDto>(await _context.SubCustomers.FindAsync(sub.Id));
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<bool>> DeleteSubCustomer(long userId)
+        {
+            var serviceResponse = new ServiceResponse<bool>();
+            try
+            {
+                var user = await _context.Users.FindAsync(userId);
+                var subCustomer = await _context.SubCustomers
+                    .Include(i => i.ContactPerson)
+                    .ThenInclude(j => j.Contacts)
+                    .FirstAsync(i => i.User == user);
+
+                foreach (var c in subCustomer.ContactPerson.Contacts)
+                    {
+                        _context.Entry(c).State = EntityState.Deleted;
+                    }
+                _context.Entry(subCustomer.ContactPerson).State = EntityState.Deleted;
+
+
+
+                subCustomer.User = null;
+                _context.SubCustomers.Remove(subCustomer);
+
+                await _context.SaveChangesAsync();
+
+                serviceResponse.Data = true;
+
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<long>> ExistSubCustomer(long userId)
+        {
+            var serviceResponse = new ServiceResponse<long>();
+            var user = await _context.Users.FirstAsync(i => i.Id == userId);
+            serviceResponse.Data = user.SubCustomerId ?? 0;
+
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<SubCustomerDto>>> GetSubCustomers(long customerId)
+        {
+            var serviceResponse = new ServiceResponse<List<SubCustomerDto>>();
+            try
+            {
+                var customer = await _context.Customers
+                .Include(i => i.SubCustomers)
+                .FirstOrDefaultAsync(i => i.Id == customerId);
+                var ids = customer.SubCustomers.Select(i => i.Id).ToList();
+                var subs = _context.SubCustomers.ToList();
+                var data = subs.Select(i => _mapper.Map<SubCustomerDto>(i)).ToList();
+                foreach(var item in data)
+                {
+                    item.AddedToCurrentCustomer = ids.Contains(item.Id);
+                }
+
+                serviceResponse.Data = data;
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<SubCustomerDto>>> AddSubCustomerToCustomer(long customerId, long subCustomerId)
+        {
+            var serviceResponse = new ServiceResponse<List<SubCustomerDto>>();
+            try
+            {
+                var customer = await _context.Customers
+                .Include(i => i.SubCustomers)
+                .FirstOrDefaultAsync(i => i.Id == customerId);
+
+                var subCustomer = await _context.SubCustomers.FirstOrDefaultAsync(i => i.Id == subCustomerId);
+                customer.SubCustomers.Add(subCustomer);
+                _context.Entry(customer).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                var ids = customer.SubCustomers.Select(i => i.Id).ToList();
+                var subs = _context.SubCustomers.ToList();
+                var data = subs.Select(i => _mapper.Map<SubCustomerDto>(i)).ToList();
+                foreach (var item in data)
+                {
+                    item.AddedToCurrentCustomer = ids.Contains(item.Id);
+                }
+
+                serviceResponse.Data = data;
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<SubCustomerDto>> GetSubCustomerById(long customerId, long subCustomerId)
+        {
+            var serviceResponse = new ServiceResponse<SubCustomerDto>();
+            var customer = await _context.Customers
+                .Include(i => i.SubCustomers)
+                .FirstOrDefaultAsync(i => i.Id == customerId);
+            var subCustomer = await _context.SubCustomers
+                .Include(i => i.User)
+                .Include(i => i.CustomerType)
+                .Include(i => i.ContactPerson)
+                .ThenInclude(j => j.Contacts)
+                .FirstOrDefaultAsync(i => i.Id == subCustomerId);
+            var data = _mapper.Map<SubCustomerDto>(subCustomer);
+            data.UserId = subCustomer.User.Id;
+            if(customerId!=0) data.AddedToCurrentCustomer = customer.SubCustomers.Contains(subCustomer);
+            serviceResponse.Data = data;
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<SubCustomerDto>>> GetCustomerSubs(long customerId)
+        {
+            var serviceResponse = new ServiceResponse<List<SubCustomerDto>>();
+            try
+            {
+                var customer = await _context.Customers
+                .Include(i => i.SubCustomers)
+                .FirstOrDefaultAsync(i => i.Id == customerId);
+                var data = customer.SubCustomers.Select(i => _mapper.Map<SubCustomerDto>(i)).ToList();
+
+                serviceResponse.Data = data;
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
         }
     }
 

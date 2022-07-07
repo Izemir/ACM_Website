@@ -35,5 +35,22 @@ namespace ACM_API.Services.CustomerService
         Task<ServiceResponse<List<ConstructionDto>>> UpdateConstruction(long customerId, ConstructionDto construction);
 
         Task<ServiceResponse<List<ConstructionDto>>> DeleteConstruction(long customerId, long constructionId);
+
+        Task<ServiceResponse<SubCustomerDto>> AddSubCustomer(SubCustomerDto sub, long userId);
+
+        Task<ServiceResponse<SubCustomerDto>> UpdateSubCustomer(SubCustomerDto sub);
+
+        Task<ServiceResponse<bool>> DeleteSubCustomer(long userId);
+
+        Task<ServiceResponse<long>> ExistSubCustomer(long userId);
+
+        Task<ServiceResponse<List<SubCustomerDto>>> GetSubCustomers(long customerId);
+
+        Task<ServiceResponse<List<SubCustomerDto>>> AddSubCustomerToCustomer(long customerId, long subCustomerId);
+
+        Task<ServiceResponse<SubCustomerDto>> GetSubCustomerById(long customerId, long subCustomerId);
+
+        Task<ServiceResponse<List<SubCustomerDto>>> GetCustomerSubs(long customerId);
+
     }
 }

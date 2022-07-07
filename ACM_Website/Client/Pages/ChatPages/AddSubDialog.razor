@@ -1,0 +1,83 @@
+﻿@inject ISnackbar Snackbar
+@inject IChatService ChatService
+
+
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Добавить/удалить подрядчика
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudSelect T="WebSubCustomer" Placeholder="..." Label="Список подрядчиков" @bind-Value="ChosenSub">
+            @foreach (var sub in Subs)
+            {
+                <MudSelectItem Value="sub">@sub.Name</MudSelectItem>
+            }
+        </MudSelect>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="(()=>AddSub(ChosenSub))">Добавить подрядчика</MudButton>
+        <MudTable Items="Chat.SubCustomers" Hover="true" Striped="true" Dense="true" Class="mb-2">
+            <HeaderContent>
+                <MudTh>Имя подрядчика</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="Delete">
+                    <MudIconButton OnClick="(()=>DeleteSub(context))"
+                                   Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Filled"></MudIconButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public WebChat Chat { get; set; }
+
+    [Parameter] public List<WebSubCustomer> Subs { get; set; }
+
+    public string Error { get; set; } = string.Empty;
+
+    public WebSubCustomer ChosenSub { get; set; }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+
+
+    private async Task AddSub(WebSubCustomer sub)
+    {
+        var request = await ChatService.AddSubToChat(Chat.Id, sub.Id);
+        if (request.Success)
+        {
+            Chat = request.Data;
+        }
+        else
+        {
+            Snackbar.Add("Ошибка: " + request.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteSub(WebSubCustomer sub)
+    {
+        var request = await ChatService.DeleteSubFromChat(Chat.Id, sub.Id);
+        if (request.Success)
+        {
+            Chat = request.Data;
+        }
+        else
+        {
+            Snackbar.Add("Ошибка: " + request.Message, Severity.Error);
+        }
+    }
+
+}
+

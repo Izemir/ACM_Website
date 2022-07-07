@@ -1,0 +1,198 @@
+﻿@page "/subcustomer"
+@page "/subcustomer/{subCustomerId:long}"
+@inject ICustomerService CustomerService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+
+@if (subCustomer == null)
+{
+    <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+else
+{
+    <h3>Подрядчик</h3>
+    <div class="name">
+        <h5>Имя</h5>
+        <span>@subCustomer.Name</span><br />
+    </div>
+    <div class="address">
+        <h5>Адрес</h5>
+        <span>@subCustomer.Address</span><br />
+    </div>
+    <div class="ogrn">
+        <h5>ОГРН</h5>
+        <span>@subCustomer.OGRN</span><br />
+    </div>
+    <div class="kpp">
+        <h5>КПП</h5>
+        <span>@subCustomer.KPP</span><br />
+    </div>
+    <div class="inn">
+        <h5>ИНН</h5>
+        <span>@subCustomer.INN</span><br />
+    </div>
+    <div class="name">
+        <h5>Имя контактного лица</h5>
+        <span>@subCustomer.ContactPerson.Name</span><br />
+    </div>
+    <div class="contact">
+        <h5>Контакт</h5>
+        <span>@subCustomer.ContactPerson.Contacts[0].Address</span><br />
+    </div>
+    <div class="type">
+        <h5>Тип подрядчика</h5>
+        <span>@subCustomer.CustomerType.TypeName</span><br />
+    </div>
+
+    @if (IsMine)
+    {
+        <MudGrid>
+            <MudItem xs="3">
+                <button class="btn btn-secondary" @onclick="@(()=>Change(subCustomer.Id))">
+                    <i class="oi oi-action-redo"></i>&nbsp;&nbsp;&nbsp;Изменить
+                </button>
+            </MudItem>
+            <MudItem xs="3">
+                <button class="btn btn-secondary" @onclick="@(()=>ShowChats(subCustomer.Id))">
+                    <i class="oi oi-chat"></i>&nbsp;&nbsp;&nbsp;Чаты подрядчика
+                </button>
+            </MudItem>
+            <MudItem xs="3">
+                <button class="btn btn-danger" @onclick="@(Delete)">
+                    <i class="oi oi-trash"></i>&nbsp;&nbsp;&nbsp;Удалить подрядчика
+                </button>
+            </MudItem>
+        </MudGrid>
+    }
+
+
+
+
+
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public long? SubCustomerId { get; set; }
+
+    public long Id { get; set; }
+
+    public bool IsMine { get; set; } = false;
+
+    public long userId { get; set; }
+
+    WebSubCustomer subCustomer = null;
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+        if (SubCustomerId == null)
+        {
+
+            var request = await CustomerService.ExistSubCustomer(userId);
+
+            if (request.Success)
+            {
+                if (request.Data != 0)
+                {
+                    var Id = request.Data;
+                    long customerId = 0;
+                    var cusRequest = await CustomerService.ExistCustomer(userId);
+                    if (cusRequest.Success)
+                    {
+                        customerId = cusRequest.Data;
+                    }
+                    else
+                    {
+                        message = cusRequest.Message;
+                        messageCssClass = "text-danger";
+                    }
+
+                    var subRequest = await CustomerService.GetSubCustomerById(customerId, Id);
+                    if (subRequest.Success)
+                    {
+                        subCustomer = subRequest.Data;
+                        if (subCustomer.UserId == userId) IsMine = true;
+                    }
+                    else
+                    {
+                        message = subRequest.Message;
+                        messageCssClass = "text-danger";
+                    }
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("createsubcustomer");
+                }
+            }
+            else
+            {
+                message = request.Message;
+                messageCssClass = "text-danger";
+            }
+        }
+        else
+        {
+            long customerId = 0;
+            var request = await CustomerService.ExistCustomer(userId);
+            if (request.Success)
+            {
+                customerId = request.Data;
+            }
+            else
+            {
+                message = request.Message;
+                messageCssClass = "text-danger";
+            }
+
+            var subRequest = await CustomerService.GetSubCustomerById(customerId, SubCustomerId.Value);
+            if (subRequest.Success)
+            {
+                subCustomer = subRequest.Data;
+                if (subCustomer.UserId == userId) IsMine = true;
+            }
+            else
+            {
+                message = subRequest.Message;
+                messageCssClass = "text-danger";
+            }
+
+        }
+    }
+
+    async Task Delete()
+    {
+        var result = await CustomerService.DeleteSubCustomer(userId);
+        if (result.Success)
+        {
+            NavigationManager.NavigateTo("createsubcustomer");
+        }
+        else
+        {
+            message = result.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+
+    void ShowChats(long subCustomerId)
+    {
+        NavigationManager.NavigateTo($"subcustomerchats/{subCustomerId}");
+    }
+
+    void Change(long subCustomerId)
+    {
+        NavigationManager.NavigateTo($"createsubcustomer/{subCustomerId}");
+    }
+}

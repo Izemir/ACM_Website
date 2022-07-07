@@ -22,6 +22,18 @@ namespace ACM_Website.Client.Services.ChatService
 #endif
         }
 
+        public async Task<ServiceResponse<WebChat>> AddSubToChat(long chatId, long subCustomerId)
+        {
+            var result = await _http.PutAsJsonAsync($"{apiConnection}/Chat/AddSubToChat/{chatId}/{subCustomerId}", 0);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<WebChat>>();
+        }
+
+        public async Task<ServiceResponse<WebChat>> DeleteSubFromChat(long chatId, long subCustomerId)
+        {
+            var result = await _http.PutAsJsonAsync($"{apiConnection}/Chat/DeleteSubFromChat/{chatId}/{subCustomerId}", 0);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<WebChat>>();
+        }
+
         public async Task<ServiceResponse<long>> ExistChat(long customerId, long executorId)
         {
             var result = await _http.GetAsync($"{apiConnection}/Chat/ExistChat/{customerId}/{executorId}");
@@ -50,6 +62,12 @@ namespace ACM_Website.Client.Services.ChatService
         {
             var result = await _http.GetAsync($"{apiConnection}/Chat/GetSender/{userId}");
             return await result.Content.ReadFromJsonAsync<ServiceResponse<Sender>>();
+        }
+
+        public async Task<ServiceResponse<List<WebChat>>> GetSubCustomerChats(long subCustomerId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Chat/GetSubCustomerChats/{subCustomerId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<WebChat>>>();
         }
 
         public async Task<ServiceResponse<WebChat>> SendMessage(long chatId, Message message)

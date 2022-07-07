@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ACM_API.Dtos.Customer;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,5 +15,7 @@ namespace ACM_API.Dtos.Chat
         public string ChatName { get; set; }
 
         public long OrderId { get; set; }
+
+        public List<SubCustomerDto> SubCustomers { get; set; }
     }
 }

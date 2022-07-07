@@ -22,5 +22,21 @@ namespace ACM_Website.Client.Services.CustomerService
         Task<ServiceResponse<List<Construction>>> DeleteConstruction(long customerId, long constructionId);
 
         Task<ServiceResponse<WebCustomer>> UpdateCustomer(WebCustomer customer);
+
+        Task<ServiceResponse<WebSubCustomer>> AddSubCustomer(WebSubCustomer sub, long userId);
+
+        Task<ServiceResponse<WebSubCustomer>> UpdateSubCustomer(WebSubCustomer sub);
+
+        Task<ServiceResponse<bool>> DeleteSubCustomer(long userId);
+
+        Task<ServiceResponse<long>> ExistSubCustomer(long userId);
+
+        Task<ServiceResponse<List<WebSubCustomer>>> GetSubCustomers(long customerId);
+
+        Task<ServiceResponse<List<WebSubCustomer>>> AddSubCustomerToCustomer(long customerId, long subCustomerId);
+
+        Task<ServiceResponse<WebSubCustomer>> GetSubCustomerById(long customerId, long subCustomerId);
+
+        Task<ServiceResponse<List<WebSubCustomer>>> GetCustomerSubs(long customerId);
     }
 }

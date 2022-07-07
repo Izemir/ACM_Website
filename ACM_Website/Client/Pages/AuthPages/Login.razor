@@ -48,7 +48,7 @@
         {
             errorMessage = string.Empty;
 
-            await LocalStorage.SetItemAsync("username", result.Data.Username);
+            await LocalStorage.SetItemAsync("email", result.Data.Email);
             await LocalStorage.SetItemAsync("id", result.Data.Id);
             switch (result.Data.Role)
             {
@@ -60,6 +60,9 @@
                     break;
                 case "Исполнитель":
                     await LocalStorage.SetItemAsync("role", new String("Executor"));
+                    break;
+                case "Субподрядчик":
+                    await LocalStorage.SetItemAsync("role", new String("SubCustomer"));
                     break;
                 default: break;
             }

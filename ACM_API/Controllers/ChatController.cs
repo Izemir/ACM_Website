@@ -111,5 +111,44 @@ namespace ACM_API.Controllers
 
             return Ok(response);
         }
+
+        [HttpGet("GetSubCustomerChats/{subCustomerId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<ServiceResponse<List<ChatDto>>>> GetSubCustomerChats(long subCustomerId)
+        {
+            var response = await _chatService.GetSubCustomerChats(subCustomerId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPut("AddSubToChat/{chatId}/{subCustomerId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<ServiceResponse<ChatDto>>> AddSubToChat(long chatId,long subCustomerId)
+        {
+            var response = await _chatService.AddSubToChat(chatId, subCustomerId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPut("DeleteSubFromChat/{chatId}/{subCustomerId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<ServiceResponse<ChatDto>>> DeleteSubFromChat(long chatId, long subCustomerId)
+        {
+            var response = await _chatService.DeleteSubFromChat(chatId, subCustomerId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
     }
 }

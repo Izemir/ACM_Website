@@ -169,6 +169,103 @@ namespace ACM_API.Controllers
 
             return Ok(response);
         }
+
+
+        [HttpPost("AddSubCustomer/{userId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<SubCustomerDto>> AddSubCustomer(SubCustomerDto sub, long userId)
+        {
+            var result = await _customerService.AddSubCustomer(sub, userId);
+            if (result.Success == false)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        [HttpPut("UpdateSubCustomer")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<ServiceResponse<SubCustomerDto>>> UpdateSubCustomer(SubCustomerDto sub)
+        {
+            var response = await _customerService.UpdateSubCustomer(sub);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpDelete("DeleteSubCustomer/{userId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<ServiceResponse<bool>>> DeleteSubCustomer(long userId)
+        {
+            var response = await _customerService.DeleteSubCustomer(userId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpGet("ExistSubCustomer/{userId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<long>> ExistSubCustomer(long userId)
+        {
+            return Ok(await _customerService.ExistSubCustomer(userId));
+        }
+
+        [HttpGet("GetSubCustomers/{customerId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<SubCustomerDto>>> GetSubCustomers(long customerId)
+        {
+            var response = await _customerService.GetSubCustomers(customerId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPut("AddSubCustomerToCustomer/{customerId}/{subCustomerId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<SubCustomerDto>>> AddSubCustomerToCustomer(long customerId, long subCustomerId)
+        {
+            var result = await _customerService.AddSubCustomerToCustomer(customerId,subCustomerId);
+            if (result.Success == false)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("GetSubCustomerById/{customerId}/{subCustomerId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<SubCustomerDto>> GetSubCustomerById(long customerId, long subCustomerId)
+        {
+            var response = await _customerService.GetSubCustomerById(customerId, subCustomerId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpGet("GetCustomerSubs/{customerId}")]
+        [EnableCors("CorsPolicy")]
+        public async Task<ActionResult<List<SubCustomerDto>>> GetCustomerSubs(long customerId)
+        {
+            var response = await _customerService.GetCustomerSubs(customerId);
+            if (response.Data == null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
     }
 
     

@@ -103,5 +103,53 @@ namespace ACM_Website.Client.Services.CustomerService
             var result = await _http.GetAsync($"{apiConnection}/Customer/GetConstruction/{constructionId}");
             return await result.Content.ReadFromJsonAsync<ServiceResponse<Construction>>();
         }
+
+        public async Task<ServiceResponse<WebSubCustomer>> AddSubCustomer(WebSubCustomer sub, long userId)
+        {
+            var result = await _http.PostAsJsonAsync($"{apiConnection}/Customer/AddSubCustomer/{userId}", sub);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<WebSubCustomer>>();
+        }
+
+        public async Task<ServiceResponse<WebSubCustomer>> UpdateSubCustomer(WebSubCustomer sub)
+        {
+            var result = await _http.PutAsJsonAsync($"{apiConnection}/Customer/UpdateSubCustomer", sub);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<WebSubCustomer>>();
+        }
+
+        public async Task<ServiceResponse<bool>> DeleteSubCustomer(long userId)
+        {
+            var result = await _http.DeleteAsync($"{apiConnection}/Customer/DeleteSubCustomer/{userId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+        }
+
+        public async Task<ServiceResponse<long>> ExistSubCustomer(long userId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Customer/ExistSubCustomer/{userId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<long>>();
+        }
+
+        public async Task<ServiceResponse<List<WebSubCustomer>>> GetSubCustomers(long customerId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Customer/GetSubCustomers/{customerId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<WebSubCustomer>>>();
+        }
+
+        public async Task<ServiceResponse<List<WebSubCustomer>>> AddSubCustomerToCustomer(long customerId, long subCustomerId)
+        {
+            var result = await _http.PutAsJsonAsync($"{apiConnection}/Customer/AddSubCustomerToCustomer/{customerId}/{subCustomerId}",0);
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<WebSubCustomer>>>();
+        }
+
+        public async Task<ServiceResponse<WebSubCustomer>> GetSubCustomerById(long customerId, long subCustomerId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Customer/GetSubCustomerById/{customerId}/{subCustomerId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<WebSubCustomer>>();
+        }
+
+        public async Task<ServiceResponse<List<WebSubCustomer>>> GetCustomerSubs(long customerId)
+        {
+            var result = await _http.GetAsync($"{apiConnection}/Customer/GetCustomerSubs/{customerId}");
+            return await result.Content.ReadFromJsonAsync<ServiceResponse<List<WebSubCustomer>>>();
+        }
     }
 }

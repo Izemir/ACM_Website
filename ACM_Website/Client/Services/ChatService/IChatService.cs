@@ -22,5 +22,10 @@ namespace ACM_Website.Client.Services.ChatService
         Task<ServiceResponse<long>> ExistChat(long customerId, long executorId);
 
         Task<ServiceResponse<Sender>> GetSenderInfo(long userId);
+
+        Task<ServiceResponse<List<WebChat>>> GetSubCustomerChats(long subCustomerId);
+
+        Task<ServiceResponse<WebChat>> AddSubToChat(long chatId, long subCustomerId);
+        Task<ServiceResponse<WebChat>> DeleteSubFromChat(long chatId, long subCustomerId);
     }
 }

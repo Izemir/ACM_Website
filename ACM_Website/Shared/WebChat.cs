@@ -15,5 +15,7 @@ namespace ACM_Website.Shared
         public string ChatName { get; set; }
 
         public long OrderId { get; set; }
+
+        public List<WebSubCustomer> SubCustomers { get; set; }
     }
 }

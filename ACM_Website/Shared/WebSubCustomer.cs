@@ -1,12 +1,12 @@
-﻿using ACM_API.Models.Customer;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace ACM_API.Models.Customer
+namespace ACM_Website.Shared
 {
-    public class Customer
+    public class WebSubCustomer
     {
         public long Id { get; set; }
 
@@ -14,7 +14,7 @@ namespace ACM_API.Models.Customer
 
         public string FullName { get; set; }
 
-        public List<ContactPerson> ContactPersons { get; set; }
+        public ContactPerson ContactPerson { get; set; }
 
         public bool IsDelete { get; set; }
 
@@ -29,14 +29,13 @@ namespace ACM_API.Models.Customer
         public string ActualAddress { get; set; }
         public CustomerType CustomerType { get; set; }
 
-        public List<Industry> Industries { get; set; }
+        public long UserId { get; set; }
 
-        public List<Construction> Constructions { get; set; }
+        public bool AddedToCurrentCustomer { get; set; }
 
-        public User User { get; set; }
-
-        public List<Chat.Chat> Chats { get; set; }
-
-        public List<SubCustomer> SubCustomers { get; set; }
+        public override string ToString()
+        {
+            return $"Подрядчик {Name}";
+        }
     }
 }

@@ -1,0 +1,102 @@
+﻿@page "/subcustomerlist/"
+@inject NavigationManager NavigationManager
+@inject ICustomerService CustomerService
+@inject ILocalStorageService LocalStorage
+
+@if (WebSubs == null)
+{
+    <span>Загрузка...</span>
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+else
+{
+    <h3>Список подрядчиков</h3>
+
+    <MudTable Items="@WebSubs" Hover="true">
+        <HeaderContent>
+            <MudTh>Имя подрядчика</MudTh>
+            <MudTh>-</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>
+                <MudButton OnClick="@(() => Approve(context.Id))"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.Accessible"
+                           Disabled="context.AddedToCurrentCustomer"
+                           Color="Color.Info">Добавить подрядчика</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+
+
+
+    <div class="@messageCssClass">
+        <span>@message</span>
+    </div>
+}
+
+
+@code {
+    public long CustomerId { get; set; }
+
+    string message = string.Empty;
+    string messageCssClass = string.Empty;
+
+    List<WebSubCustomer> WebSubs { get; set; }
+
+    public long userId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = long.Parse(await LocalStorage.GetItemAsStringAsync("id"));
+
+        var request = await CustomerService.ExistCustomer(userId);
+
+        if (request.Success)
+        {
+            if (request.Data != 0)
+            {
+                CustomerId = request.Data;
+
+                var subRequest = await CustomerService.GetSubCustomers(CustomerId);
+                if (subRequest.Success)
+                {
+                    WebSubs = subRequest.Data;
+                }
+                else
+                {
+                    message = subRequest.Message;
+                    messageCssClass = "text-danger";
+                }
+            }
+            else
+            {
+                NavigationManager.NavigateTo("createcustomer");
+            }
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    async Task Approve(long subId)
+    {
+        var request = await CustomerService.AddSubCustomerToCustomer(CustomerId, subId);
+        if (request.Success)
+        {
+            WebSubs = request.Data;
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+}
+

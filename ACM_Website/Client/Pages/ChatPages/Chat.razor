@@ -7,6 +7,7 @@
 @inject IExecutorService ExecutorService
 @inject IDialogService DialogService
 @inject IFileService FileService
+@inject ISnackbar Snackbar
 
 @if (WebChat == null)
 {
@@ -19,24 +20,6 @@ else
 {
     <h3>Чаты заказчика</h3>
 
-    @if (WebChat.Messages.Count > 0)
-    {
-        <MudPaper Height="400px" Width="100%">
-            <MudContainer MaxWidth="MaxWidth.Small">
-                @foreach (var message in WebChat.Messages)
-                {
-                    @if (message.SenderName == Sender.SenderName)
-                    {
-                        <MudField Label="@message.SenderName" Style="@($"background:{Colors.Yellow.Lighten3};")" Variant="Variant.Outlined">@message.Text</MudField>
-                    }
-                    else
-                    {
-                        <MudField Label="@message.SenderName" Style="@($"background:{Colors.LightBlue.Lighten3};")" Variant="Variant.Outlined">@message.Text</MudField>
-                    }
-                }
-            </MudContainer>
-        </MudPaper>
-    }
     <MudTextField @bind-Value="TextMessage" Label="Писать тут" Variant="Variant.Text"></MudTextField>
     <MudButton OnClick="@(() => SendMessage(TextMessage))"
                StartIcon="@Icons.Material.Filled.Send"
@@ -50,6 +33,33 @@ else
                StartIcon="@Icons.Material.Filled.Cake"
                Variant="Variant.Filled"
                Color="Color.Primary">Открыть заказ</MudButton>
+
+    if (Sender.SenderId == customerId)
+    {
+        <MudButton OnClick="@(() => AddSubCustomer())"
+                   StartIcon="@Icons.Material.Filled.Accessible"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">Добавить подрядчика</MudButton>
+    }
+
+    @if (WebChat.Messages.Count > 0)
+    {
+        <MudContainer MaxWidth="MaxWidth.Small">
+            @foreach (var message in WebChat.Messages)
+            {
+                @if (message.SenderName == Sender.SenderName)
+                {
+                    <MudField Label="@message.SenderName" Style="@($"background:{Colors.Yellow.Lighten3};")" Variant="Variant.Outlined">@message.Text</MudField>
+                }
+                else
+                {
+                    <MudField Label="@message.SenderName" Style="@($"background:{Colors.LightBlue.Lighten3};")" Variant="Variant.Outlined">@message.Text</MudField>
+                }
+            }
+        </MudContainer>
+    }
+
+
 
 
 
@@ -72,6 +82,8 @@ else
     public Sender Sender { get; set; }
 
     public string TextMessage { get; set; } = string.Empty;
+
+    public long customerId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -104,6 +116,17 @@ else
         else
         {
             message = "Чат не найден";
+            messageCssClass = "text-danger";
+        }
+
+        var cus = await CustomerService.ExistCustomer(userId);
+        if (cus.Success)
+        {
+            customerId = cus.Data;
+        }
+        else
+        {
+            message = cus.Message;
             messageCssClass = "text-danger";
         }
     }
@@ -196,6 +219,34 @@ else
                 message = requestTwo.Message;
                 messageCssClass = "text-danger";
             }
+        }
+        else
+        {
+            message = request.Message;
+            messageCssClass = "text-danger";
+        }
+    }
+
+    async Task AddSubCustomer()
+    {
+        var request = await CustomerService.GetCustomerSubs(customerId);
+        if (request.Success)
+        {
+            var subs = request.Data;
+
+            if (subs.Count < 1) Snackbar.Add("Ошибка: нет подрядчиков ", Severity.Error);
+            else
+            {
+                var parameters = new DialogParameters
+                {
+                    ["Subs"] = subs,
+                    ["Chat"] = WebChat
+                };
+                DialogOptions maxWidth = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+                var dialog = DialogService.Show<AddSubDialog>($"Добавить/удалить подрядчика", parameters, maxWidth);
+            }
+
         }
         else
         {

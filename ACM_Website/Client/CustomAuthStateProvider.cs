@@ -21,14 +21,14 @@ namespace ACM_Website.Client
         {
             var state = new AuthenticationState(new ClaimsPrincipal());
 
-            string username = await _localStorage.GetItemAsStringAsync("username");
+            string email = await _localStorage.GetItemAsStringAsync("email");
             string role = await _localStorage.GetItemAsync<string>("role");
             if (role == "-") role = "Admin";
-            if (!string.IsNullOrEmpty(username))
+            if (!string.IsNullOrEmpty(email))
             {
                 var identity = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, username),
+                    new Claim(ClaimTypes.Email, email),
                     new Claim(ClaimTypes.Role, role)
                 }, "test authentication type");
 

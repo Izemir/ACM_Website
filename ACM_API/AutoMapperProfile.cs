@@ -48,6 +48,9 @@ namespace ACM_API
             CreateMap<Order, OrderDto>();
             CreateMap<OrderStatusDto, OrderStatus>();
             CreateMap<OrderStatus, OrderStatusDto>();
+
+            CreateMap<SubCustomerDto, SubCustomer>();
+            CreateMap<SubCustomer, SubCustomerDto>();
         }
     }
 }
